@@ -343,3 +343,5 @@ build/
 .webpack/
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,intellij,spring,eclipse
+/.idea
+/.mvn
