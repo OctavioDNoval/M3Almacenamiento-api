@@ -1,7 +1,6 @@
 package com.example.m3almacenamiento.modelo.entidad;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,4 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "tipobaulera")
 public class TipoBaulera {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id_tipo_baulera;
+
+
+    private String nombre;
+
+    private String descripcion;
+
+    private Double precio_mensual;
 }
