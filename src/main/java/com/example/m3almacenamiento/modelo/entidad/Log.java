@@ -2,11 +2,13 @@ package com.example.m3almacenamiento.modelo.entidad;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -15,25 +17,33 @@ import java.util.Date;
 @AllArgsConstructor
 @Table(name = "logs")
 @EntityListeners(AuditingEntityListener.class)
+@Builder
 public class Log {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_log;
+    @Column(name = "id_log")
+    private Long idLog;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario")
     private Usuario usuario;
 
     private String accion;
 
-    private String tabla_afectada;
+    @Column(name = "tabla_afectada")
+    private String tablaAfectada;
 
     private String descripcion;
 
-    private String valores_anteriores;
+    @Column(name = "valores_anteriores", columnDefinition = "TEXT")
+    @Lob
+    private String valoresAnteriores;
 
-    private String valores_nuevos;
+    @Column(name = "valores_nuevos", columnDefinition = "TEXT")
+    @Lob
+    private String valoresNuevos;
 
     @CreatedDate
-    private Date fecha;
+    private LocalDateTime fecha;
 }
