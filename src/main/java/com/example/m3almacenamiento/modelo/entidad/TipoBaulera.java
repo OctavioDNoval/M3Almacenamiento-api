@@ -20,7 +20,7 @@ public class TipoBaulera {
     @Column(name = "id_tipo_baulera")
     private Long idTipoBaulera;
 
-    private String nombre;
+    private String tipoBauleraNombre;
 
     private String descripcion;
 
