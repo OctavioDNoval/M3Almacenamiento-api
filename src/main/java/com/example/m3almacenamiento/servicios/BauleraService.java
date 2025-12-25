@@ -52,9 +52,31 @@ public class BauleraService {
     }
 
     public BauleraResponse actualizar(BauleraRequest request, Long id){
-        Baulera bauleraExistente = bauleraRepositorio.findById(id)
+        /*Baulera bauleraExistente = bauleraRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
 
-        if(request.getNroBaulera() != null )
+        if(request.getNroBaulera() != null &&
+                bauleraRepositorio.existsByNroBaulera(request.getNroBaulera().trim())){
+            throw new RuntimeException("Baulera existente");
+        }
+
+        Baulera bauleraActualizada = bauleraMapper.toEntity(request);
+        */
+        return new BauleraResponse();
+    }
+
+    public void eliminar (Long id){
+        if(!bauleraRepositorio.existsById(id)){
+            throw new RuntimeException("Baulera no encontrada");
+        }
+
+        Baulera baulera = bauleraRepositorio.findById(id).orElseThrow();
+        if(baulera.getUsuarioAsignado()!=null){
+            baulera.setUsuarioAsignado(null);
+        }
+        if(baulera.getTipoBaulera()!=null){
+            baulera.setTipoBaulera(null);
+        }
+        bauleraRepositorio.delete(baulera);
     }
 }
