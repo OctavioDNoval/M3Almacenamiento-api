@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class TipoBauleraService {
     private final TipoBauleraRepositorio  tipoBauleraRepositorio;
     private final TipoBauleraMapper tipoBauleraMapper;
-    private final BauleraService bauleraService;
+    private final GestorBauleraService gestorBauleraService;
 
     public TipoBauleraResponse crear(TipoBauleraRequest request){
         if(tipoBauleraRepositorio.existsByNombreTipoBaulera(request.getTipoBauleraNombre())){
@@ -52,7 +52,7 @@ public class TipoBauleraService {
         }
 
         TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
-        bauleraService.eliminarPorTipoBaulera(idTipoBaulera);
+        gestorBauleraService.eliminarPorTipoBaulera(idTipoBaulera);
         tipoBauleraRepositorio.deleteById(idTipoBaulera);
     }
 
@@ -62,7 +62,7 @@ public class TipoBauleraService {
         }
 
         TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
-        bauleraService.setNullOnDeleteTipoBaulera(idTipoBaulera);
+        gestorBauleraService.setNullOnDeleteTipoBaulera(idTipoBaulera);
         tipoBauleraRepositorio.deleteById(idTipoBaulera);
     }
 }
