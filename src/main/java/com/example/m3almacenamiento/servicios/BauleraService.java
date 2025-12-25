@@ -6,6 +6,7 @@ import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
+import com.example.m3almacenamiento.repositorios.TipoBauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class BauleraService {
     private final BauleraRepositorio  bauleraRepositorio;
     private final BauleraMapper bauleraMapper;
+    private final TipoBauleraRepositorio tipoBauleraRepositorio;
 
     public BauleraResponse crear(BauleraRequest bauleraRequest){
         if(bauleraRepositorio.existsByNroBaulera(bauleraRequest.getNroBaulera().trim())){
@@ -78,5 +80,31 @@ public class BauleraService {
             baulera.setTipoBaulera(null);
         }
         bauleraRepositorio.delete(baulera);
+    }
+
+    public void eliminarPorTipoBaulera(Long idTipoBaulera){
+        if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
+            throw new RuntimeException("Tipo Baulera no encontrada");
+        }
+
+        List<Baulera> baulerasList = bauleraRepositorio.findAll();
+        for(Baulera baulera : baulerasList){
+            if(baulera.getTipoBaulera().getIdTipoBaulera().equals(idTipoBaulera)){
+                bauleraRepositorio.delete(baulera);
+            }
+        }
+    }
+
+    public void setNullOnDeleteTipoBaulera(Long idTipoBaulera){
+        if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
+            throw new RuntimeException("Tipo Baulera no encontrada");
+        }
+
+        List<Baulera> baulerasList = bauleraRepositorio.findAll();
+        for(Baulera baulera : baulerasList){
+            if(baulera.getTipoBaulera().getIdTipoBaulera().equals(idTipoBaulera)){
+                baulera.setTipoBaulera(null);
+            }
+        }
     }
 }

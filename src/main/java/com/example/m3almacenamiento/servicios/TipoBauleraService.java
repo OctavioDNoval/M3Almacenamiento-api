@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class TipoBauleraService {
     private final TipoBauleraRepositorio  tipoBauleraRepositorio;
     private final TipoBauleraMapper tipoBauleraMapper;
+    private final BauleraService bauleraService;
 
     public TipoBauleraResponse crear(TipoBauleraRequest request){
         if(tipoBauleraRepositorio.existsByNombreTipoBaulera(request.getTipoBauleraNombre())){
@@ -51,5 +52,17 @@ public class TipoBauleraService {
         }
 
         TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
+        bauleraService.eliminarPorTipoBaulera(idTipoBaulera);
+        tipoBauleraRepositorio.deleteById(idTipoBaulera);
+    }
+
+    public void eliminarTipoBauleraSetNullOnCascade(Long idTipoBaulera){
+        if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
+            throw new RuntimeException("Tipo de baulera no encontrado");
+        }
+
+        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
+        bauleraService.setNullOnDeleteTipoBaulera(idTipoBaulera);
+        tipoBauleraRepositorio.deleteById(idTipoBaulera);
     }
 }
