@@ -26,11 +26,11 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
 
     public UsuarioResponse crear(UsuarioRequest request){
-        if(usuarioRepositorio.existByEmail(request.getEmail())){
+        if(usuarioRepositorio.existsByEmail(request.getEmail())){
             throw new RuntimeException("Usuario con este mail ya existe");
         }
 
-        if(usuarioRepositorio.existByDni(request.getDni())){
+        if(usuarioRepositorio.existsByDni(request.getDni())){
             throw new RuntimeException("usuario con Dni: "+ request.getDni() +" ya existe");
         }
 
@@ -64,7 +64,7 @@ public class UsuarioService {
 
         if(request.getEmail() != null &&
             !request.getEmail().equals(usuarioExistente.getEmail()) &&
-                usuarioRepositorio.existByEmail(request.getEmail())){
+                usuarioRepositorio.existsByEmail(request.getEmail())){
             throw new RuntimeException("Usuario con email ya existe");
         }
 

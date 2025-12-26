@@ -22,7 +22,7 @@ public class TipoBauleraService {
     private final GestorBauleraService gestorBauleraService;
 
     public TipoBauleraResponse crear(TipoBauleraRequest request){
-        if(tipoBauleraRepositorio.existsByNombreTipoBaulera(request.getTipoBauleraNombre())){
+        if(tipoBauleraRepositorio.existsByTipoBauleraNombre(request.getTipoBauleraNombre())){
             throw new RuntimeException("Tipo de baulera ya existe");
         }
 

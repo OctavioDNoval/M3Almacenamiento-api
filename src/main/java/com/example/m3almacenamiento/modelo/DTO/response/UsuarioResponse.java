@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +30,6 @@ public class UsuarioResponse {
     private ESTADO_USUARIO estado;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime fechaCreacion;
-    private Long idBaulera;
-    private String nroBaulera;
+    private List<Long> idBauleras;
+    private List<String> nroBaulera;
 }

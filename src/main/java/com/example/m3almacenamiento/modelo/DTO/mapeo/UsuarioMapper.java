@@ -30,7 +30,7 @@ public interface UsuarioMapper {
 
     @Mapping(target = "idUsuario", source = "idUsuario")
     @Mapping(target = "fechaCreacion", source = "fechaCreacion", qualifiedByName = "dateToLocalDateTime")
-    @Mapping(target = "idBaulera", source = "bauleras", qualifiedByName = "extractBauleraIds")
+    @Mapping(target = "idBauleras", source = "bauleras", qualifiedByName = "extractBauleraIds")
     @Mapping(target = "nroBaulera", source = "bauleras", qualifiedByName = "extractBauleraNro")
     UsuarioResponse toResponse(Usuario usuario);
 
@@ -64,7 +64,7 @@ public interface UsuarioMapper {
                 .collect(Collectors.toList());
     }
 
-    @Named("excractBauleraNumero")
+    @Named("extractBauleraNro")
     default List<String> excractBauleraNumero(java.util.List<Baulera> bauleras) {
         if(bauleras == null || bauleras.isEmpty()) return null;
 

@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TipoBauleraRepositorio extends JpaRepository<TipoBaulera, Long> {
-    Boolean existsByNombreTipoBaulera(String nombreTipoBaulera);
+    Boolean existsByTipoBauleraNombre(String nombreTipoBaulera);
 }

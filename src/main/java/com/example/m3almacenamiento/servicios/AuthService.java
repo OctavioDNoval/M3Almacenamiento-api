@@ -42,7 +42,7 @@ public class AuthService {
     }
 
     public AuthResponse register(UsuarioRequest usuarioRequest) {
-        if(usuarioRepositorio.existByEmail(usuarioRequest.getEmail())){
+        if(usuarioRepositorio.existsByEmail(usuarioRequest.getEmail())){
             throw new RuntimeException("Usuario existente");
         }
         Usuario usuario = usuarioMapper.toEntity(usuarioRequest);

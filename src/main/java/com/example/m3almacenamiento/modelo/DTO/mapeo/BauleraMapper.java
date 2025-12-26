@@ -41,7 +41,7 @@ public interface BauleraMapper {
 
     //============Metodos auxiliares===============
 
-    @Named("idToUsuario")
+    @Named("idToTipoBaulera")
     default TipoBaulera idToTipoBaulera(Long idTipoBaulera) {
         if(idTipoBaulera == null) return null;
 
