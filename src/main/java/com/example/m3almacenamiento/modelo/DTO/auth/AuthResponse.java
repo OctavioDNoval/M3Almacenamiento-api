@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.modelo.DTO.auth;
 
+import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,4 +11,5 @@ import lombok.NoArgsConstructor;
 @Getter
 public class AuthResponse {
     private String token;
+    private UsuarioResponse usuario;
 }
