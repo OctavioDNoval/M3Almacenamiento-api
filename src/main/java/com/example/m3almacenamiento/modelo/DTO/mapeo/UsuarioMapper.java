@@ -6,6 +6,8 @@ import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
         imports = {LocalDateTime.class}
 )
 public interface UsuarioMapper {
+
     // ==========Conversion para Crear (request -> Entity)============
 
     @Mapping(target = "idUsuario", ignore = true)
@@ -24,6 +27,7 @@ public interface UsuarioMapper {
     @Mapping(target = "estado", constant = "activo")
     @Mapping(target = "fechaCreacion", ignore = true)
     @Mapping(target = "bauleras", ignore = true)
+    @Mapping(target = "rol", source = "rol", defaultExpression = "java(com.example.m3almacenamiento.modelo.enumerados.ROL.USER)")
     Usuario toEntity(UsuarioRequest request);
 
     //==========Conversion para leer (Entity -> Response)==============
@@ -46,6 +50,7 @@ public interface UsuarioMapper {
     void updateFromRequest(UsuarioRequest request, @MappingTarget Usuario usuario);
 
     //===========Metodos auxiliares================
+
 
     @Named("dateToLocalDateTime")
     default LocalDateTime dateToLocalDateTime(Date date) {

@@ -22,6 +22,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final UsuarioMapper usuarioMapper;
 
+
     public AuthResponse login(LoginRequest loginRequest) {
         Usuario usuario = usuarioRepositorio.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -46,6 +47,7 @@ public class AuthService {
             throw new RuntimeException("Usuario existente");
         }
         Usuario usuario = usuarioMapper.toEntity(usuarioRequest);
+        usuario.setPasswordHash(passwordEncoder.encode(usuarioRequest.getPassword()));
         Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
         String token = jwtService.generateToken(
                 User.withUsername(usuarioGuardado.getEmail())

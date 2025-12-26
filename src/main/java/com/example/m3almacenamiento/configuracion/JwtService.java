@@ -4,6 +4,7 @@ import com.example.m3almacenamiento.modelo.enumerados.ROL;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.transaction.Transactional;
@@ -44,11 +45,11 @@ public class JwtService {
 
         claims.put("role", role);
         return Jwts.builder()
-                .claims(claims)
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+expiration))
-                .signWith(getSecretKey(), Jwts.SIG.HS256)
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis()+expiration))
+                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -58,20 +59,20 @@ public class JwtService {
         }
         Claims claims = excractAllClaims(token);
         return Jwts.builder()
-                .claims(claims)
-                .subject(claims.getSubject())
-                .issuedAt(new Date((System.currentTimeMillis())))
-                .expiration(new Date(System.currentTimeMillis()+expiration))
+                .setClaims(claims)
+                .setSubject(claims.getSubject())
+                .setIssuedAt(new Date((System.currentTimeMillis())))
+                .setExpiration(new Date(System.currentTimeMillis()+expiration))
                 .signWith(getSecretKey())
                 .compact();
     }
 
     public Claims excractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSecretKey())
+        return Jwts.parserBuilder()
+                .setSigningKey(getSecretKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public String extractEmail(String token) {

@@ -31,6 +31,5 @@ public class UsuarioRequest {
     private String password;
 
     @Builder.Default
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private ROL rol = ROL.USER;
 }
