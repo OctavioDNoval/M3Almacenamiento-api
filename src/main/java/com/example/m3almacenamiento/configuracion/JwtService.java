@@ -52,6 +52,20 @@ public class JwtService {
                 .compact();
     }
 
+    public String refreshToken(String token) {
+        if(isTokenExpired(token)){
+            throw new JwtException("Token expired");
+        }
+        Claims claims = excractAllClaims(token);
+        return Jwts.builder()
+                .claims(claims)
+                .subject(claims.getSubject())
+                .issuedAt(new Date((System.currentTimeMillis())))
+                .expiration(new Date(System.currentTimeMillis()+expiration))
+                .signWith(getSecretKey())
+                .compact();
+    }
+
     public Claims excractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSecretKey())
@@ -87,11 +101,21 @@ public class JwtService {
     }
 
     private Boolean isTokenExpired(String token) {
-        return excractAllClaims(token).getExpiration().before(new Date());
+        return extractExpiration(token).before(new Date());
     }
 
     public Boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractEmail(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
+
+    public Boolean isTokenValid(String token) {
+        try{
+            String email = extractEmail(token);
+            return email!= null && !isTokenExpired(email);
+        }catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
 }
