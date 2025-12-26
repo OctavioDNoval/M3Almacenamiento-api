@@ -27,7 +27,7 @@ public class AuthService {
         Usuario usuario = usuarioRepositorio.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        if(!passwordEncoder.matches(loginRequest.getPassword(), loginRequest.getPassword())){
+        if(!passwordEncoder.matches(loginRequest.getPassword(), usuario.getPasswordHash())){
             throw new RuntimeException("Constrasenia incorrecta");
         }
 

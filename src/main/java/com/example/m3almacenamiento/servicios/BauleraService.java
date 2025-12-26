@@ -62,6 +62,14 @@ public class BauleraService {
         return bauleraMapper.toResponse(baulera);
     }
 
+    public List<BauleraResponse> obtenerPorIdUsuario(Long idUsuario){
+        List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);
+        return listaBauleras
+                .stream()
+                .map(bauleraMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public void eliminar (Long id){
         if(!bauleraRepositorio.existsById(id)){
             throw new RuntimeException("Baulera no encontrada");

@@ -39,7 +39,8 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/baulera/public/**",
                                 "/tipo-baulera/public/**",
-                                "/users/public/**"
+                                "/users/public/**",
+                                "/logs/public/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/baulera/user/**",
