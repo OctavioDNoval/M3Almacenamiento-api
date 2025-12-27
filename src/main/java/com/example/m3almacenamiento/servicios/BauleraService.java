@@ -70,7 +70,7 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
-    public void eliminar (Long id){
+    public boolean eliminar (Long id){
         if(!bauleraRepositorio.existsById(id)){
             throw new RuntimeException("Baulera no encontrada");
         }
@@ -83,7 +83,6 @@ public class BauleraService {
             baulera.setTipoBaulera(null);
         }
         bauleraRepositorio.delete(baulera);
+        return true;
     }
-
-
 }
