@@ -1,13 +1,12 @@
 package com.example.m3almacenamiento.controladores;
 
+import com.example.m3almacenamiento.modelo.DTO.request.TipoBauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.TipoBauleraResponse;
 import com.example.m3almacenamiento.modelo.entidad.TipoBaulera;
 import com.example.m3almacenamiento.servicios.TipoBauleraService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -24,5 +23,26 @@ public class TipoBauleraController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/user/obtener-id/{idTipoBaulera}")
+    public ResponseEntity<TipoBauleraResponse> obtenerPorId(@PathVariable Long idTipoBaulera){
+        return ResponseEntity.ok(tipoBauleraService.obtenerPorId(idTipoBaulera));
+    }
+
+    //=================POST=================
+    @PostMapping("/admin/new-tipo")
+    public ResponseEntity<TipoBauleraResponse> newTipo(@RequestBody TipoBauleraRequest tipoBauleraRequest){
+        return ResponseEntity.ok(tipoBauleraService.crear(tipoBauleraRequest));
+    }
+
+    //================DELETE=====================
+    @DeleteMapping("/admin/delete/{idTipoBaulera}/cascade")
+    public ResponseEntity<Void> deleteTipoBauleraCascade(@PathVariable Long idTipoBaulera){
+        boolean isDeleted = tipoBauleraService.eliminarTipoBauleraOnCascade(idTipoBaulera);
+        if(isDeleted){
+            return ResponseEntity.noContent().build();
+        }else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }

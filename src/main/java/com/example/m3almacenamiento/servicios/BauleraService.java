@@ -34,6 +34,7 @@ public class BauleraService {
         baulera.setEstadoBaulera(ESTADO_BAULERA.disponible);
         if(bauleraRequest.getIdUsuario()!=null){
             baulera.setFechaAsignacion(new Date());
+            baulera.setEstadoBaulera(ESTADO_BAULERA.ocupada);
         }
 
         TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(bauleraRequest.getIdTipoBaulera())

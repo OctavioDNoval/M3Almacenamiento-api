@@ -46,7 +46,7 @@ public class TipoBauleraService {
         return tipoBauleraMapper.toResponse(tipoBaulera);
     }
 
-    public void eliminarTipoBauleraOnCascade(Long idTipoBaulera){
+    public boolean eliminarTipoBauleraOnCascade(Long idTipoBaulera){
         if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
             throw new RuntimeException("Tipo de baulera no encontrado");
         }
@@ -54,15 +54,7 @@ public class TipoBauleraService {
         TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
         gestorBauleraService.eliminarPorTipoBaulera(idTipoBaulera);
         tipoBauleraRepositorio.deleteById(idTipoBaulera);
+        return true;
     }
 
-    public void eliminarTipoBauleraSetNullOnCascade(Long idTipoBaulera){
-        if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
-            throw new RuntimeException("Tipo de baulera no encontrado");
-        }
-
-        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
-        gestorBauleraService.setNullOnDeleteTipoBaulera(idTipoBaulera);
-        tipoBauleraRepositorio.deleteById(idTipoBaulera);
-    }
 }

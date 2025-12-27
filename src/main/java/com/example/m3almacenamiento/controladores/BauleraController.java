@@ -36,7 +36,7 @@ public class BauleraController {
     }
 
     //=======================POST======================
-    @PostMapping("/admin/nueva-baulera")
+    @PostMapping("/admin/new-baulera")
     public ResponseEntity<BauleraResponse> guardar (@RequestBody BauleraRequest bauleraRequest){
         BauleraResponse nuevaBaulera =  bauleraService.crear(bauleraRequest);
         return ResponseEntity.ok(nuevaBaulera);
