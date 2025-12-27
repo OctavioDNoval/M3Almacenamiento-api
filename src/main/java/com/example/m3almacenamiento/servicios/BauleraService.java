@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,6 +46,45 @@ public class BauleraService {
 
         Baulera bauleraGuardada =  bauleraRepositorio.save(baulera);
         return bauleraMapper.toResponse(bauleraGuardada);
+    }
+
+    public List<BauleraResponse> crearDesdeNroBaulera(Integer cantidad, Long tipoBauleraId){
+        Integer nroMax = bauleraRepositorio.findMaxNroBauleraAsInteger()
+                .orElse(0);
+
+        if(cantidad <= 0){
+            throw new IllegalArgumentException("Cantidad debe ser mayor a 0");
+        }
+        if(cantidad > 50){
+            throw new IllegalArgumentException("Cantidad debe ser menor a 50");
+        }
+        TipoBaulera tipoBaulera = null;
+        if(tipoBauleraId!=null){
+            tipoBaulera = tipoBauleraRepositorio.findById(tipoBauleraId).orElseThrow();
+        }
+
+        List<Baulera> bauleras = new ArrayList<>();
+        for(int i=0;i<cantidad;i++){
+            Integer nuevoNumero = nroMax+1;
+            String nuevoNumeroStr =  String.valueOf(nuevoNumero);
+
+            if(tipoBauleraRepositorio.existsByTipoBauleraNombre(nuevoNumeroStr)){
+                throw new RuntimeException("Tipo Baulera ya existe");
+            }
+
+            Baulera nuevaBaulera = new Baulera();
+            nuevaBaulera.setEstadoBaulera(ESTADO_BAULERA.disponible);
+            nuevaBaulera.setTipoBaulera(tipoBaulera);
+            nuevaBaulera.setNroBaulera(nuevoNumeroStr);
+
+            bauleras.add(nuevaBaulera);
+        }
+        List<Baulera> baulerasGuardadas = bauleraRepositorio.saveAll(bauleras);
+        return baulerasGuardadas
+                .stream()
+                .map(bauleraMapper::toResponse)
+                .collect(Collectors.toList());
+
     }
 
     public List<BauleraResponse> obtenerTodos (){
