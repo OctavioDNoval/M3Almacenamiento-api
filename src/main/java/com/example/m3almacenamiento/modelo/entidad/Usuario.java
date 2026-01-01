@@ -12,6 +12,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,6 +73,13 @@ public class Usuario {
     @CreatedDate
     @Column(name = "fecha_creacion")
     private Date fechaCreacion;
+
+    @Column(name = "deuda_acumulada")
+    @Builder.Default
+    private BigDecimal deudaAcumulada = BigDecimal.ZERO;
+
+    @Column(name = "ultima_actualizacion_deuda")
+    private Date ultimaActualizacionDeuda;
 
     @OneToMany(mappedBy = "usuarioAsignado", fetch = FetchType.LAZY)
     private List<Baulera> bauleras = new ArrayList<>();
