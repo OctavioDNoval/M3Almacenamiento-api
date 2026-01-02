@@ -35,6 +35,7 @@ public class PagosScheduler {
         //Buscamos que dia del mes es hoy
         Calendar calendar = Calendar.getInstance();
         int diaMes = calendar.get(Calendar.DAY_OF_MONTH);
+        int diaMaximoMes = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         //Buscamos las bauleras que vencen en la fecha de hoy
         List<Baulera> baulerasAVencer = bauleraRepositorio.findByDiaVencimientoPago(diaMes);
