@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -38,7 +39,16 @@ public class PagosScheduler {
         int diaMaximoMes = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         //Buscamos las bauleras que vencen en la fecha de hoy
-        List<Baulera> baulerasAVencer = bauleraRepositorio.findByDiaVencimientoPago(diaMes);
+        List<Baulera> baulerasAVencer = new ArrayList<>();
+
+        baulerasAVencer.addAll(bauleraRepositorio.findByDiaVencimientoPago(diaMes));
+
+        if(diaMes == diaMaximoMes){
+            for (int dia = diaMaximoMes; dia < 32; dia++){
+                baulerasAVencer.addAll(bauleraRepositorio.findByDiaVencimientoPago(dia));
+            }
+        }
+
         log.info("Bauleras a vencer el dia {} : {}", diaMes, baulerasAVencer);
 
         for(Baulera b : baulerasAVencer){
