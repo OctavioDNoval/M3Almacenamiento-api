@@ -1,10 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Baulera Asignada</title>
+    <style>
+        html {
+            width: 400px;
+            font-family: sans-serif;
+        }
+        body {
+            width: 400px;
+            background-color: #ccc;
+            margin: 0;
+            height: auto;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            margin: 2rem 0 0 0;
+        }
+
+        footer {
+            background-color: rgb(22, 45, 90);
+            margin: 0;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        footer p {
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+        }
+        .name-container {
+            width: 100%;
+            background-color: rgb(22, 45, 90);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+        .img-title {
+            width: 100%;
+        }
+        .main-name-container {
+            margin: 16px 0;
+        }
+        .nro-baulera {
+            font-weight: 700;
+            font-size: 3rem;
+        }
+        .tipo-baulera {
+            opacity: 0.8;
+            font-style: italic;
+            color: #222;
+        }
+        .monto-mensual {
+            margin-bottom: 16px;
+        }
+        .baulera-info-container {
+            text-align: center;
+        }
+        .footer-info-contact {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 0;
+        }
+        .footer-info-variable {
+            color: #ccc;
+            opacity: 0.6;
+        }
+        .footer-info-extra {
+            text-align: center;
+            font-style: italic;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 <body>
-
+<div class="container">
+    <header class="name-container">
+        <img th:src="${logoBase64}"
+             alt="M3 almacenamiento"
+             class="img-title" />
+    </header>
+    <main>
+        <h1>Baulera Asignada!</h1>
+        <div class="main-name-container">
+					<span>Hola <strong th:text="${nombre}">Nombre</strong>!
+                    a usted se le asignó la baulera Nro:</span>
+        </div>
+        <p class="nro-baulera" th:text="${nroBaulera}">NroBaulera</p>
+        <div class="baulera-info-container">
+            <p class="tipo-baulera" th:text="${tipoBaulera}">Tipo Baulera</p>
+            <p>Con un monto de:</p>
+            <p class="monto-mensual">
+                <strong th:text="'$' + ${montoMensual} + '/mes'">$0/mes</strong>
+            </p>
+        </div>
+    </main>
+    <footer>
+        <div class="footer-info-contact">
+            <p class="footer-info-variable" th:text="${emailContacto}">email@empresa.com</p>
+            <p class="footer-info-variable" th:text="${telefonoContacto}">+XX XXX XXX XXXX</p>
+            <p class="footer-info-variable" th:text="${direccion}">Dirección</p>
+            <p class="footer-info-variable" th:text="${horarioAtencion}">Horario</p>
+        </div>
+        <p class="footer-info-extra">No válido como factura</p>
+    </footer>
+</div>
 </body>
 </html>

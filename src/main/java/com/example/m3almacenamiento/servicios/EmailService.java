@@ -79,7 +79,30 @@ public class EmailService {
     * */
     public void enviarNotificacionDeAsignacion(Usuario usuario, Baulera baulera){
         try{
-            
+            Map<String,Object> variables = new HashMap<>();
+
+            // Datos de la Baulera y el Usuario
+            variables.put("nombre", usuario.getNombreCompleto());
+            variables.put("nroBaulera", baulera.getNroBaulera());
+            variables.put("tipoBaulera", baulera.getTipoBaulera().getTipoBauleraNombre());
+            variables.put("montoMensual", baulera.getTipoBaulera().getPrecioMensual());
+
+            // Datos de la empresa
+            variables.put("telefonoContacto", contactConfig.getContacto().getTelefono() );
+            variables.put("emailContacto", contactConfig.getContacto().getEmail() );
+            variables.put("direccion", contactConfig.getContacto().getDireccion() );
+            variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
+
+            // Logo para el mail en Base64
+            String logoBase64= convertirImagenABase64();
+            variables.put("logoBase64", logoBase64);
+
+            enviarEmailTemplate(
+                    usuario.getEmail(),
+                    "Asignacion de baulera" + baulera.getNroBaulera(),
+                    "EmailAsignacionDeBauleraTemplate",
+                    variables);
+
         }catch(Exception e){
             log.error("❌ Error al enviar el mail ");
         }
