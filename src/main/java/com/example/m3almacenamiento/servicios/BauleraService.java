@@ -5,6 +5,7 @@ import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.TipoBaulera;
+import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.TipoBauleraRepositorio;
@@ -125,5 +126,15 @@ public class BauleraService {
         }
         bauleraRepositorio.delete(baulera);
         return true;
+    }
+
+    protected List<Baulera> setUsuarioNull(List<Baulera> bauleras, Usuario usuario){
+        List<Baulera> copy =  new ArrayList<>(bauleras);
+        for(Baulera baulera : copy){
+            baulera.setUsuarioAsignado(null);
+            usuario.getBauleras().remove(baulera);
+            bauleraRepositorio.save(baulera);
+        }
+        return copy;
     }
 }

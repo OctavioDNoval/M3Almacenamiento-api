@@ -4,6 +4,7 @@ import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
+import com.example.m3almacenamiento.servicios.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.List;
 public class PagosScheduler {
     private final UsuarioRepositorio usuarioRepositorio;
     private final BauleraRepositorio bauleraRepositorio;
+    private final EmailService emailService;
 
     /*
      * Se ejecuta todos los dias a la 1Am
@@ -83,6 +85,8 @@ public class PagosScheduler {
         usuario.setDeudaAcumulada(nuevaDeuda);
         usuario.setUltimaActualizacionDeuda(hoy.getTime());
         usuarioRepositorio.save(usuario);
+
+        emailService.enviarNotificacionDeuda(usuario,precioMensual,nuevaDeuda);
 
         log.info("Deuda actualizada correctamente para \n" +
                 "Usuario: {}\n" +

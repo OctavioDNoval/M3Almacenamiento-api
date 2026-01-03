@@ -99,7 +99,7 @@ public class EmailService {
 
             enviarEmailTemplate(
                     usuario.getEmail(),
-                    "Asignacion de baulera" + baulera.getNroBaulera(),
+                    "Asignacion de baulera " + baulera.getNroBaulera(),
                     "EmailAsignacionDeBauleraTemplate",
                     variables);
 

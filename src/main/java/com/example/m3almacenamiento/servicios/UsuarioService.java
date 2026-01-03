@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ public class UsuarioService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
+    private final BauleraService bauleraService;
 
     public UsuarioResponse crear(UsuarioRequest request){
         if(usuarioRepositorio.existsByEmail(request.getEmail())){
@@ -96,6 +98,19 @@ public class UsuarioService {
             return;
         }
         usuarioRepositorio.deleteById(id);
+    }
+
+    public UsuarioResponse darDeBaja(Long id){
+
+        Usuario usuario = usuarioRepositorio.findById(id)
+                .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ id));
+        List<Baulera> bauleras = usuario.getBauleras();
+        List<Baulera> baulerasCopia = bauleraService.setUsuarioNull(bauleras,usuario );
+
+        usuario.setEstado(ESTADO_USUARIO.inactivo);
+        Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
+
+        return usuarioMapper.toResponse(usuarioGuardado);
     }
 
     public UsuarioResponse asignarBauleras(Long usuarioId, List<Baulera> bauleras){
