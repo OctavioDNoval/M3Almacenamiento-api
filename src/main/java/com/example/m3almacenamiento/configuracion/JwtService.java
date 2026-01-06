@@ -101,8 +101,12 @@ public class JwtService {
         }
     }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    public Boolean isTokenExpired(String token) {
+        Date expiration = extractExpiration(token);
+        if (expiration == null) {
+            return true; // Si no tiene expiración, considéralo expirado
+        }
+        return expiration.before(new Date());
     }
 
     public Boolean isTokenValid(String token, UserDetails userDetails) {
@@ -113,7 +117,7 @@ public class JwtService {
     public Boolean isTokenValid(String token) {
         try{
             String email = extractEmail(token);
-            return email!= null && !isTokenExpired(email);
+            return email!= null && !isTokenExpired(token);
         }catch (JwtException | IllegalArgumentException e) {
             return false;
         }

@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.controladores;
 
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
+import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import com.example.m3almacenamiento.servicios.UsuarioService;
@@ -20,6 +21,17 @@ public class UsuarioController {
     @GetMapping("/admin/getAll")
     public ResponseEntity<List<UsuarioResponse>> getAll(){
         return ResponseEntity.ok(usuarioService.obtenerTodos());
+    }
+
+    @GetMapping("/admin/getPagina")
+    public ResponseEntity<PaginacionResponse<UsuarioResponse>> obtenerTodosPaginado(
+            @RequestParam(defaultValue = "1") Integer pagina,
+            @RequestParam(defaultValue = "15") Integer tamanio
+    ){
+        PaginacionResponse<UsuarioResponse> paginaResponse = usuarioService
+                .obtenerTodosPaginados(pagina, tamanio);
+
+        return ResponseEntity.ok(paginaResponse);
     }
 
     @PostMapping("/admin/alta/usuario")

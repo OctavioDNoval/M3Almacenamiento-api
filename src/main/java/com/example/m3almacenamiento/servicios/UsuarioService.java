@@ -2,6 +2,7 @@ package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
+import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
@@ -9,6 +10,10 @@ import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +48,26 @@ public class UsuarioService {
 
         Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
         return usuarioMapper.toResponse(usuarioGuardado);
+    }
+
+    public PaginacionResponse<UsuarioResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio){
+        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by("idUsuario").descending());
+        Page<Usuario> paginaUsuarios = usuarioRepositorio.findAll(pageable);
+
+        List<UsuarioResponse> contenido = paginaUsuarios.getContent()
+                .stream()
+                .map(usuarioMapper::toResponse)
+                .collect(Collectors.toList());
+
+        return PaginacionResponse.<UsuarioResponse>builder()
+                .contenido(contenido)
+                .pagina(pagina)
+                .tamanio(tamanio)
+                .totalElementos(paginaUsuarios.getTotalElements())
+                .totalPaginas(paginaUsuarios.getTotalPages())
+                .esUltima(paginaUsuarios.isLast())
+                .esPrimera(paginaUsuarios.isFirst())
+                .build();
     }
 
     public List<UsuarioResponse> obtenerTodos(){

@@ -34,7 +34,7 @@ public class AuthController {
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<String> validate(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> validate(@RequestHeader("Authorization") String token) {
         try{
             String cleanToken = token.replace("Bearer ", "").trim();
             if(jwtService.isTokenValid(cleanToken)){
