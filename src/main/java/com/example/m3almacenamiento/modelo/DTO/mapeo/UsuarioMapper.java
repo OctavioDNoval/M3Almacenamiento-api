@@ -27,6 +27,8 @@ public interface UsuarioMapper {
     @Mapping(target = "estado", constant = "activo")
     @Mapping(target = "fechaCreacion", ignore = true)
     @Mapping(target = "bauleras", ignore = true)
+    @Mapping(target = "deudaAcumulada", ignore = true)
+    @Mapping(target = "ultimaActualizacionDeuda", ignore = true)
     @Mapping(target = "rol", source = "rol", defaultExpression = "java(com.example.m3almacenamiento.modelo.enumerados.ROL.USER)")
     Usuario toEntity(UsuarioRequest request);
 
@@ -36,6 +38,8 @@ public interface UsuarioMapper {
     @Mapping(target = "fechaCreacion", source = "fechaCreacion", qualifiedByName = "dateToLocalDateTime")
     @Mapping(target = "idBauleras", source = "bauleras", qualifiedByName = "extractBauleraIds")
     @Mapping(target = "nroBaulera", source = "bauleras", qualifiedByName = "extractBauleraNro")
+    @Mapping(target = "deudaAcumulada", source = "deudaAcumulada")
+    @Mapping(target = "ultimaActualizacionDeuda", source = "ultimaActualizacionDeuda", qualifiedByName = "dateToLocalDateTime")
     UsuarioResponse toResponse(Usuario usuario);
 
     //===============Conversion para actualizar-======================
