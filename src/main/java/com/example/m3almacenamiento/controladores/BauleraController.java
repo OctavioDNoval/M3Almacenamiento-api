@@ -2,6 +2,7 @@ package com.example.m3almacenamiento.controladores;
 
 import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
+import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.servicios.BauleraService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,18 @@ public class BauleraController {
     public ResponseEntity<List<BauleraResponse>> obtenerTodoPorUsuario(@PathVariable Long idUsuario){
         List<BauleraResponse> listaBauleras = bauleraService.obtenerPorIdUsuario(idUsuario);
         return ResponseEntity.ok(listaBauleras);
+    }
+
+    @GetMapping("/admin/obtenerTodo/pagina")
+    public ResponseEntity<PaginacionResponse<BauleraResponse>> obtenerTodosPaginado(
+            @RequestParam(defaultValue = "1") Integer pagina,
+            @RequestParam(defaultValue = "15") Integer tamanio
+    ){
+        PaginacionResponse<BauleraResponse> paginaResponse = bauleraService
+                .obtenerTodosPaginados(pagina, tamanio);
+        System.out.println(paginaResponse);
+
+        return ResponseEntity.ok(paginaResponse);
     }
 
     //=======================POST======================

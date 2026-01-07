@@ -3,15 +3,19 @@ package com.example.m3almacenamiento.servicios;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.BauleraMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
+import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.TipoBaulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.TipoBauleraRepositorio;
-import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -103,6 +107,27 @@ public class BauleraService {
 
         return bauleraMapper.toResponse(baulera);
     }
+
+    public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio) {
+        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by("nroBaulera").descending());
+        Page<Baulera> paginaBaulera = bauleraRepositorio.findAll(pageable);
+
+        List<BauleraResponse> contenido = paginaBaulera.getContent()
+                .stream()
+                .map(bauleraMapper::toResponse)
+                .collect(Collectors.toList());
+
+        return PaginacionResponse.<BauleraResponse>builder()
+                .contenido(contenido)
+                .pagina(pagina)
+                .tamanio(tamanio)
+                .totalElementos(paginaBaulera.getTotalElements())
+                .totalPaginas(paginaBaulera.getTotalPages())
+                .esUltima(paginaBaulera.isLast())
+                .esPrimera(paginaBaulera.isFirst())
+                .build();
+    }
+
 
     public List<BauleraResponse> obtenerPorIdUsuario(Long idUsuario){
         List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);
