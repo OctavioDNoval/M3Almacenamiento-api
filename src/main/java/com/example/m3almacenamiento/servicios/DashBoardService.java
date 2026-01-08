@@ -2,7 +2,9 @@ package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
+import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
+import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import lombok.Data;
@@ -13,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +27,7 @@ public class DashBoardService {
     private final BauleraRepositorio  bauleraRepositorio;
 
     /*===============METODO PARA GENERAR EL DASHBOARD=====================*/
-    
+
 
     /*===============CLASES AUXILIARES=====================*/
 
@@ -72,6 +73,27 @@ public class DashBoardService {
                         .build();
 
         return new EstadisticasBaulerasCalculadas(estadisticas,total,ocupadas,valorMensualOcupadas);
+    }
+
+    private EstadisticasUsuariosCalculadas calcularEstadisticasUsuarios(List<Usuario> usuarios, List<Baulera> bauleras){
+        long total = usuarios.size();
+        long activos = contarUsuariosActivos(usuarios);
+        long inactivos = total - activos;
+        long conDeuda = contarUsuariosConDeuda(usuarios);
+        BigDecimal deudaTotal = calcularDeudaTotal(usuarios);
+        DashBoardResponse.UsuarioConMayorDeuda usuarioConMayorDeuda =
+                encontrarUsuarioConMayorDeuda(usuarios,bauleras);
+
+        DashBoardResponse.EstadisticasUsuarios estadisticas  =
+                DashBoardResponse.EstadisticasUsuarios.builder()
+                        .totalUsuarios(total)
+                        .usuariosActivos(activos)
+                        .usuariosConDeuda(conDeuda)
+                        .deudaTotal(deudaTotal)
+                        .usuarioConMayorDeuda(usuarioConMayorDeuda)
+                        .build();
+
+        return new EstadisticasUsuariosCalculadas(estadisticas,total,deudaTotal);
     }
 
     /*=================METODOS DE CALUCLO AUXILIARES===========================*/
@@ -137,5 +159,50 @@ public class DashBoardService {
                 .cantidad(masPopular.getValue())
                 .porcentaje(porcentaje)
                 .build();
+    }
+
+    private long contarUsuariosActivos(List<Usuario> usuarios){
+        return usuarios.stream()
+                .filter(u-> u.getEstado() == ESTADO_USUARIO.activo)
+                .count();
+    }
+
+    private long contarUsuariosConDeuda(List<Usuario> usuarios){
+        return usuarios.stream()
+                .filter(u -> u.getDeudaAcumulada() != null &&
+                        u.getDeudaAcumulada().compareTo(BigDecimal.ZERO) > 0)
+                .count();
+    }
+
+    private BigDecimal calcularDeudaTotal(List<Usuario> usuarios){
+        return usuarios.stream()
+                .map(Usuario::getDeudaAcumulada)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private DashBoardResponse.UsuarioConMayorDeuda encontrarUsuarioConMayorDeuda(List<Usuario> usuarios, List<Baulera> bauleras){
+        Optional<Usuario> usuarioConMayorDeuda = usuarios.stream()
+                .filter(u-> u.getDeudaAcumulada() !=null)
+                .max(Comparator.comparing(Usuario::getDeudaAcumulada));
+
+        if(!usuarioConMayorDeuda.isPresent()) return null;
+
+        Usuario usuario = usuarioConMayorDeuda.get();
+        long cantidadBauleras = contarBaulerasDeUsuario(usuario,bauleras);
+
+        return DashBoardResponse.UsuarioConMayorDeuda.builder()
+                .nombre(usuario.getNombreCompleto())
+                .email(usuario.getEmail())
+                .deuda(usuario.getDeudaAcumulada())
+                .cantidadBauleras(cantidadBauleras)
+                .build();
+    }
+
+    private long contarBaulerasDeUsuario(Usuario usuario, List<Baulera> bauleras){
+        return bauleras.stream()
+                .filter(b-> b.getUsuarioAsignado() != null &&
+                        b.getUsuarioAsignado().getIdUsuario().equals(usuario.getIdUsuario()))
+                .count();
     }
 }
