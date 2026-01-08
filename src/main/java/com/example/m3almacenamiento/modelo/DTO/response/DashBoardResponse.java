@@ -73,7 +73,7 @@ public class DashBoardResponse {
     public static class EstadisticasUsuarios {
         private Long totalUsuarios;
         private Long usuariosActivos;
-        private Long usuarioInactivos;
+        private Long usuariosInactivos;
         private Long usuariosConDeuda;
         private BigDecimal deudaTotal;
         private UsuarioConMayorDeuda usuarioConMayorDeuda;

@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,12 +90,31 @@ public class DashBoardService {
                 DashBoardResponse.EstadisticasUsuarios.builder()
                         .totalUsuarios(total)
                         .usuariosActivos(activos)
+                        .usuariosInactivos(inactivos)
                         .usuariosConDeuda(conDeuda)
                         .deudaTotal(deudaTotal)
                         .usuarioConMayorDeuda(usuarioConMayorDeuda)
                         .build();
 
         return new EstadisticasUsuariosCalculadas(estadisticas,total,deudaTotal);
+    }
+
+    private DashBoardResponse.ResumenGeneral construirResumenGeneral(
+            EstadisticasBaulerasCalculadas statsBauleras,
+            EstadisticasUsuariosCalculadas statsUsuarios,
+            List<Usuario> usuarios
+    ){
+        int nuevosUsuariosEsteMes = contarNuevosUsuariosEsteMes(usuarios);
+
+        return DashBoardResponse.ResumenGeneral.builder()
+                .totalBauleras(statsBauleras.getTotal())
+                .totalUsuarios(statsUsuarios.getTotal())
+                .valorMensualTotal(statsBauleras.getValorMensualOcupadas())
+                .deudaTotalAcumulada(statsUsuarios.getDeudaTotal())
+                .BaulerasOcupadas(statsBauleras.getOcupadas())
+                .baulerasDisponibles(statsBauleras.getEstadisticas().getBaulerasDisponibles())
+                .nuevoUsuarioMes(nuevosUsuariosEsteMes)
+                .build();
     }
 
     /*=================METODOS DE CALUCLO AUXILIARES===========================*/
@@ -203,6 +224,21 @@ public class DashBoardService {
         return bauleras.stream()
                 .filter(b-> b.getUsuarioAsignado() != null &&
                         b.getUsuarioAsignado().getIdUsuario().equals(usuario.getIdUsuario()))
+                .count();
+    }
+
+    private int contarNuevosUsuariosEsteMes(List<Usuario> usuarios){
+        LocalDate inicioMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate finMes = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth());
+
+        return (int) usuarios.stream()
+                .filter(u -> u.getFechaCreacion() != null)
+                .filter(u->{
+                    LocalDate fechaCreacion = u.getFechaCreacion().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    return !fechaCreacion.isBefore(inicioMes) && !fechaCreacion.isAfter(finMes);
+                })
                 .count();
     }
 }
