@@ -69,8 +69,8 @@ public class BauleraService {
         }
 
         List<Baulera> bauleras = new ArrayList<>();
-        for(int i=0;i<cantidad;i++){
-            Integer nuevoNumero = nroMax+1;
+        for(int i=1;i<=cantidad;i++){
+            Integer nuevoNumero = nroMax+i;
             String nuevoNumeroStr =  String.valueOf(nuevoNumero);
 
             if(tipoBauleraRepositorio.existsByTipoBauleraNombre(nuevoNumeroStr)){
@@ -81,6 +81,7 @@ public class BauleraService {
             nuevaBaulera.setEstadoBaulera(ESTADO_BAULERA.disponible);
             nuevaBaulera.setTipoBaulera(tipoBaulera);
             nuevaBaulera.setNroBaulera(nuevoNumeroStr);
+            nuevaBaulera.setFechaAsignacion(null);
 
             bauleras.add(nuevaBaulera);
         }
