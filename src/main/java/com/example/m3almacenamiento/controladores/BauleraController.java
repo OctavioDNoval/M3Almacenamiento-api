@@ -55,6 +55,14 @@ public class BauleraController {
         return ResponseEntity.ok(nuevaBaulera);
     }
 
+    @PostMapping("/admin/crear-lote")
+    public ResponseEntity<List<BauleraResponse>> guardarEnLote (
+            @RequestParam Integer cantidad,
+            @RequestParam Long tipoBauleraId
+    ){
+        return ResponseEntity.ok(bauleraService.crearDesdeNroBaulera(cantidad, tipoBauleraId));
+    }
+
     //====================DELETE==========================
     @DeleteMapping("/admin/eliminar/{idBaulera}")
     public ResponseEntity<Void> eliminar(@PathVariable Long idBaulera){
