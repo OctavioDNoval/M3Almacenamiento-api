@@ -1,6 +1,8 @@
 package com.example.m3almacenamiento.controladores;
 
+import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
 import com.example.m3almacenamiento.modelo.entidad.Log;
+import com.example.m3almacenamiento.servicios.DashBoardService;
 import com.example.m3almacenamiento.servicios.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DashBoardController {
     private final LogService logService;
+    private final DashBoardService dashBoardService;
 
-    @GetMapping("/public/obtenerTodo")
+    @GetMapping("/admin/obtenerTodo")
     public ResponseEntity<List<Log>> obtenerTodo() {
         return ResponseEntity.ok(logService.obtenerTodos());
+    }
+
+    @GetMapping("/admin/obtenerDashBoard")
+    public ResponseEntity<DashBoardResponse> obtenerDashBoard() {
+        return ResponseEntity.ok(dashBoardService.obtenerDashBoard());
     }
 }
