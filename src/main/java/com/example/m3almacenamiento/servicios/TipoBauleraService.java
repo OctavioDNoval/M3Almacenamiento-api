@@ -8,6 +8,7 @@ import com.example.m3almacenamiento.repositorios.TipoBauleraRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.TypeRegistration;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class TipoBauleraService {
     private final TipoBauleraMapper tipoBauleraMapper;
     private final GestorBauleraService gestorBauleraService;
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public TipoBauleraResponse crear(TipoBauleraRequest request){
         if(tipoBauleraRepositorio.existsByTipoBauleraNombre(request.getTipoBauleraNombre())){
             throw new RuntimeException("Tipo de baulera ya existe");
@@ -46,6 +48,7 @@ public class TipoBauleraService {
         return tipoBauleraMapper.toResponse(tipoBaulera);
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public boolean eliminarTipoBauleraOnCascade(Long idTipoBaulera){
         if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
             throw new RuntimeException("Tipo de baulera no encontrado");

@@ -10,6 +10,9 @@ import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +33,7 @@ public class DashBoardService {
     private final BauleraRepositorio  bauleraRepositorio;
 
     /*===============METODO PARA GENERAR EL DASHBOARD=====================*/
-
+    @Cacheable(value = "dashboard", key = "'dashboardData'", unless = "#result == null")
     public DashBoardResponse obtenerDashBoard() {
         log.info("Generando DashBoard...");
 
@@ -266,6 +269,12 @@ public class DashBoardService {
         String[] meses = {"Ene", "Feb", "Mar", "Abr", "May", "Jun",
                 "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"};
         return meses[numeroMes - 1];
+    }
+
+    @Scheduled(cron = "0 0 2 * * ?")
+    @CacheEvict(value = "dashboard", allEntries = true)
+    public void limpiarTodoCacheDashboard(){
+        log.info("Todo el cache del dashboard limpiado");
     }
 
     /*=================METODOS PARA "GRAFICOS"==========================*/

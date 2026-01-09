@@ -12,6 +12,7 @@ import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.TipoBauleraRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ public class BauleraService {
     private final BauleraMapper bauleraMapper;
     private final TipoBauleraRepositorio tipoBauleraRepositorio;
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse crear(BauleraRequest bauleraRequest){
         if(bauleraRepositorio.existsByNroBaulera(bauleraRequest.getNroBaulera().trim())){
             throw new RuntimeException("Baulera con NRO: "+bauleraRequest.getNroBaulera()+" ya existe");
@@ -53,6 +55,7 @@ public class BauleraService {
         return bauleraMapper.toResponse(bauleraGuardada);
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public List<BauleraResponse> crearDesdeNroBaulera(Integer cantidad, Long tipoBauleraId){
         Integer nroMax = bauleraRepositorio.findMaxNroBauleraAsInteger()
                 .orElse(0);
@@ -138,6 +141,7 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public boolean eliminar (Long id){
         if(!bauleraRepositorio.existsById(id)){
             throw new RuntimeException("Baulera no encontrada");

@@ -10,6 +10,7 @@ import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final BauleraService bauleraService;
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse crear(UsuarioRequest request){
         if(usuarioRepositorio.existsByEmail(request.getEmail())){
             throw new RuntimeException("Usuario con este mail ya existe");
@@ -84,6 +86,7 @@ public class UsuarioService {
         return  usuarioMapper.toResponse(usuario);
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse actualizar(UsuarioRequest request, Long id){
         Usuario usuarioExistente = usuarioRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ id));
@@ -111,6 +114,7 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public void eliminar(Long id){
         if(!usuarioRepositorio.existsById(id)){
             throw new RuntimeException("Usuario no encontrado con ID: "+ id);
@@ -124,6 +128,7 @@ public class UsuarioService {
         usuarioRepositorio.deleteById(id);
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse darDeBaja(Long id){
 
         Usuario usuario = usuarioRepositorio.findById(id)
@@ -137,6 +142,7 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse asignarBauleras(Long usuarioId, List<Baulera> bauleras){
         //Metodo que depende de bauleraService
         return new UsuarioResponse();
