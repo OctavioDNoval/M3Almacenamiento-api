@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +31,25 @@ public class DashBoardService {
 
     /*===============METODO PARA GENERAR EL DASHBOARD=====================*/
 
+    public DashBoardResponse obtenerDashBoard() {
+        log.info("Generando DashBoard...");
+
+        List<Baulera> bauleras = bauleraRepositorio.findAll();
+        List<Usuario> usuarios = usuarioRepositorio.findAll();
+
+        EstadisticasBaulerasCalculadas statsBauleras = calcularEstadisticasBauleras(bauleras);
+        EstadisticasUsuariosCalculadas statsUsuarios = calcularEstadisticasUsuarios(usuarios, bauleras);
+
+        return DashBoardResponse.builder()
+                .resumenGeneral(construirResumenGeneral(statsBauleras,statsUsuarios,usuarios))
+                .estadisticasBauleras(statsBauleras.getEstadisticas())
+                .estadisticasUsuarios(statsUsuarios.getEstadisticas())
+                .ocupacionPorMes(calcularOcupacionPorMes(bauleras))
+                .distribucionTipoBaulera(calcularDistribucionPorTipo(bauleras))
+                .ingresosPorTipoBaulera(calcularIngresosPorTipo(bauleras))
+                .fechaGeneracion(LocalDateTime.now())
+                .build();
+    }
 
     /*===============CLASES AUXILIARES=====================*/
 
@@ -240,5 +260,124 @@ public class DashBoardService {
                     return !fechaCreacion.isBefore(inicioMes) && !fechaCreacion.isAfter(finMes);
                 })
                 .count();
+    }
+
+    private String obtenerNombreMes(int numeroMes) {
+        String[] meses = {"Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"};
+        return meses[numeroMes - 1];
+    }
+
+    /*=================METODOS PARA "GRAFICOS"==========================*/
+    private List<DashBoardResponse.DatoGrafico> calcularOcupacionPorMes(List<Baulera> bauleras){
+        List<Baulera> baulerasOcupadas= bauleras.stream()
+                .filter(b->b.getEstadoBaulera() == ESTADO_BAULERA.ocupada)
+                .collect(Collectors.toList());
+
+        Map<String,Long> ocupacionPorMes = new HashMap<>();
+        for (int i = 11; i>=0; i--){
+            LocalDate mes= LocalDate.now().minusMonths(i);
+            String clave= obtenerNombreMes(mes.getMonthValue()) + " " + mes.getYear();
+            ocupacionPorMes.put(clave, 0L);
+        }
+
+        for(Baulera b: baulerasOcupadas){
+            Date fechaAsignacion = b.getFechaAsignacion();
+            LocalDate fecha = fechaAsignacion.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+
+            String clave = obtenerNombreMes(fecha.getMonthValue()) +" "+ fecha.getYear();
+
+            LocalDate doceMesesAtras = LocalDate.now().minusMonths(12);
+            if(!fecha.isBefore(doceMesesAtras)){
+                ocupacionPorMes.put(clave, ocupacionPorMes.getOrDefault(clave, 0L) + 1);
+            }
+        }
+
+        List<DashBoardResponse.DatoGrafico> datosGrafico = new ArrayList<>();
+        String[] colores = {
+                "#4A6FA5", "#166DD0", "#38A169", "#D69E2E", "#ED8936",
+                "#E53E3E", "#9F7AEA", "#ED64A6", "#4299E1", "#48BB78",
+                "#ECC94B", "#ED8936"
+        };
+
+        int i = 0;
+        for(Map.Entry<String,Long> entry: ocupacionPorMes.entrySet()){
+            if(entry.getValue() > 0 || i>=6){
+                datosGrafico.add(DashBoardResponse.DatoGrafico.builder()
+                        .etiqueta(entry.getKey())
+                        .valor(BigDecimal.valueOf(entry.getValue()))
+                        .color(colores[i % colores.length])
+                        .build()
+                );
+                i++;
+            }
+        }
+        return datosGrafico;
+    }
+
+    private List<DashBoardResponse.DatoGrafico> calcularDistribucionPorTipo(List<Baulera> bauleras){
+        Map<String,Long> distribucion = bauleras.stream()
+                .collect(Collectors.groupingBy(
+                        b->b.getTipoBaulera().getTipoBauleraNombre(),
+                        Collectors.counting()
+                ));
+
+        long total = bauleras.size();
+        List<DashBoardResponse.DatoGrafico> datosGrafico = new ArrayList<>();
+        String[] colores = {"#4A6FA5", "#166DD0", "#38A169", "#D69E2E", "#ED8936", "#E53E3E", "#9F7AEA"};
+
+        int i = 0;
+        for(Map.Entry<String,Long> entry: distribucion.entrySet()){
+            BigDecimal porcentaje = total > 0
+                    ? new BigDecimal(entry.getValue())
+                        .divide(new BigDecimal(total),4,RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                    : BigDecimal.ZERO;
+            String etiqueta = String.format("%s (%.1f%%)", entry.getKey(), porcentaje.doubleValue());
+            datosGrafico.add(DashBoardResponse.DatoGrafico.builder()
+                    .etiqueta(etiqueta)
+                    .valor(BigDecimal.valueOf(entry.getValue()))
+                    .color(colores[i % colores.length])
+                    .build()
+            );
+            i++;
+        }
+        return datosGrafico;
+    }
+
+    private List<DashBoardResponse.DatoGrafico> calcularIngresosPorTipo(List<Baulera> bauleras){
+        List<Baulera> baulerasOcupadas = bauleras.stream()
+                .filter(b-> b.getEstadoBaulera() ==ESTADO_BAULERA.ocupada)
+                .collect(Collectors.toList());
+
+        Map<String,BigDecimal> ingresosPorTipo = baulerasOcupadas.stream()
+                .collect(Collectors.groupingBy(
+                        b->b.getTipoBaulera().getTipoBauleraNombre(),
+                        Collectors.reducing(
+                                BigDecimal.ZERO,
+                                b->BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual()),
+                                BigDecimal::add
+                        )
+                ));
+
+        List<Map.Entry<String, BigDecimal>> entriesOrdenados = new ArrayList<>(ingresosPorTipo.entrySet());
+        entriesOrdenados.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+        List<DashBoardResponse.DatoGrafico> datos = new ArrayList<>();
+        String[] colores = {"#4A6FA5", "#166DD0", "#38A169", "#D69E2E", "#ED8936", "#E53E3E"};
+
+        for (int i = 0; i<entriesOrdenados.size(); i++){
+            Map.Entry<String,BigDecimal> entry = entriesOrdenados.get(i);
+
+            datos.add(DashBoardResponse.DatoGrafico.builder()
+                    .etiqueta(entry.getKey())
+                    .valor(entry.getValue())
+                    .color(colores[i % colores.length])
+                    .build()
+            );
+        }
+        return datos;
     }
 }
