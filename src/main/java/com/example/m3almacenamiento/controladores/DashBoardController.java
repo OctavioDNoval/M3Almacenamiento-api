@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.controladores;
 
 import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
+import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.entidad.Log;
 import com.example.m3almacenamiento.servicios.DashBoardService;
 import com.example.m3almacenamiento.servicios.LogService;
@@ -19,10 +20,12 @@ public class DashBoardController {
     private final LogService logService;
     private final DashBoardService dashBoardService;
 
-    @GetMapping("/admin/obtenerTodo")
-    public ResponseEntity<List<Log>> obtenerTodo() {
-        return ResponseEntity.ok(logService.obtenerTodos());
+    @GetMapping("/admin/obtenerLogsPaginados")
+    public ResponseEntity<PaginacionResponse<Log>> obtenerLogsPaginados(Integer pagina, Integer tamanio) {
+        return ResponseEntity.ok(logService.obtenerLogsPaginados(pagina,tamanio));
+
     }
+
 
     @GetMapping("/admin/obtenerDashBoard")
     public ResponseEntity<DashBoardResponse> obtenerDashBoard() {

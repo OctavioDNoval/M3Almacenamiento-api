@@ -1,8 +1,13 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.entidad.Log;
 import com.example.m3almacenamiento.repositorios.LogRepositorio;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,8 +17,20 @@ import java.util.List;
 public class LogService {
     private final LogRepositorio logRepositorio;
 
-    public List<Log> obtenerTodos (){
-        List<Log> logs = logRepositorio.findAll();
-        return logs;
+    public PaginacionResponse<Log> obtenerLogsPaginados(Integer pagina, Integer tamanio) {
+        Pageable pageable = PageRequest.of(pagina - 1, tamanio, Sort.by("fecha").descending());
+        Page<Log> paginaLog = logRepositorio.findAll(pageable);
+
+        List<Log> contenido = paginaLog.getContent();
+
+        return PaginacionResponse.<Log>builder()
+                .contenido(contenido)
+                .pagina(pagina)
+                .tamanio(tamanio)
+                .totalElementos(paginaLog.getTotalElements())
+                .totalPaginas(paginaLog.getTotalPages())
+                .esUltima(paginaLog.isLast())
+                .esPrimera(paginaLog.isFirst())
+                .build();
     }
 }
