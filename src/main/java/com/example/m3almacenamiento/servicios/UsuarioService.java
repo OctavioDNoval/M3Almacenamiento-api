@@ -2,6 +2,7 @@ package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
+import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -143,8 +145,19 @@ public class UsuarioService {
     }
 
     @CacheEvict(value = "dashboard", allEntries = true)
-    public UsuarioResponse asignarBauleras(Long usuarioId, List<Baulera> bauleras){
+    public UsuarioResponse asignarBauleras(Long usuarioId, List<Long> idBauleras){
         //Metodo que depende de bauleraService
-        return new UsuarioResponse();
+        Usuario usuario = usuarioRepositorio.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ usuarioId));
+
+        List<BauleraResponse> baulerasAsignadas = new ArrayList<>();
+
+        for(Long b: idBauleras){
+            baulerasAsignadas.add(bauleraService.asignarBaulera(b,usuarioId));
+        }
+
+        Usuario usuarioActualizado = usuarioRepositorio.save(usuario);
+
+        return usuarioMapper.toResponse(usuarioActualizado);
     }
 }

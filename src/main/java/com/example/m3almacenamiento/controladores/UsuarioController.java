@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.controladores;
 
+import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
@@ -42,6 +43,12 @@ public class UsuarioController {
     @PatchMapping("/admin/baja/usuario/{idUsuario}")
     public ResponseEntity<UsuarioResponse> darDeBajaUsuario (@PathVariable Long idUsuario){
         return ResponseEntity.ok(usuarioService.darDeBaja(idUsuario));
+    }
+
+    @PatchMapping("/admin/asignarBauleras/{idUsuario}")
+    public ResponseEntity<UsuarioResponse> asginarBauleras (@PathVariable Long idUsuario,
+                                                            @RequestBody List<Long> idBauleras){
+        return ResponseEntity.ok(usuarioService.asignarBauleras(idUsuario, idBauleras));
     }
 
 }

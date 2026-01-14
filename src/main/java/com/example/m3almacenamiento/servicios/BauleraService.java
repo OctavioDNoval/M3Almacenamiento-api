@@ -10,6 +10,7 @@ import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.TipoBauleraRepositorio;
+import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -31,6 +32,7 @@ public class BauleraService {
     private final BauleraRepositorio  bauleraRepositorio;
     private final BauleraMapper bauleraMapper;
     private final TipoBauleraRepositorio tipoBauleraRepositorio;
+    private final UsuarioRepositorio usuarioRepositorio;
 
     @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse crear(BauleraRequest bauleraRequest){
@@ -166,5 +168,21 @@ public class BauleraService {
             bauleraRepositorio.save(baulera);
         }
         return copy;
+    }
+
+    public BauleraResponse asignarBaulera(Long idBaulera, Long idUsuario){
+        Baulera baulera = bauleraRepositorio.findById(idBaulera)
+                .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
+
+        Usuario usuario = usuarioRepositorio.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        baulera.setUsuarioAsignado(usuario);
+        baulera.setEstadoBaulera(ESTADO_BAULERA.ocupada);
+        baulera.setFechaAsignacion(new Date());
+
+        Baulera bauleraGuardada =  bauleraRepositorio.save(baulera);
+
+        return bauleraMapper.toResponse(bauleraGuardada);
     }
 }
