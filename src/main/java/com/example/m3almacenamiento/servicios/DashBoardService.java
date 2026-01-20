@@ -1,6 +1,9 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.modelo.DTO.mapeo.BauleraMapper;
+import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
+import com.example.m3almacenamiento.modelo.DTO.response.UserDashBoardResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
@@ -13,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +35,7 @@ import java.util.stream.Collectors;
 public class DashBoardService {
     private final UsuarioRepositorio  usuarioRepositorio;
     private final BauleraRepositorio  bauleraRepositorio;
+    private final BauleraMapper bauleraMapper;
 
     /*===============METODO PARA GENERAR EL DASHBOARD=====================*/
     @Cacheable(value = "dashboard", key = "'dashboardData'", unless = "#result == null")
@@ -54,6 +59,24 @@ public class DashBoardService {
                 .build();
     }
 
+    public UserDashBoardResponse obtenerUserDashBoard(Long usuarioId) {
+        log.info("Obtendendo Dashboard para el usuario {}", usuarioId);
+
+        Usuario usuario = usuarioRepositorio.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<Baulera> baulerasUsuario = obtenerBauleras(usuarioId);
+        EstadisticasBaulerasUsuario statsBauleras = calcularEstadisticasBaulerasUsuario(baulerasUsuario);
+        List<BauleraResponse> baulerasResponse = convertirBauleraAResponse(baulerasUsuario);
+
+        return UserDashBoardResponse.builder()
+                .resumenUsuario(construirResumen(usuario))
+                .informacionBauleras(statsBauleras.informacion)
+                .bauleras(baulerasResponse)
+                .fechaCreacion(LocalDateTime.now())
+                .build();
+    }
+
     /*===============CLASES AUXILIARES=====================*/
 
     @RequiredArgsConstructor
@@ -72,6 +95,14 @@ public class DashBoardService {
         private final DashBoardResponse.EstadisticasUsuarios estadisticas;
         private final Long total;
         private final BigDecimal deudaTotal;
+    }
+
+    @Data
+    @RequiredArgsConstructor
+    private static class EstadisticasBaulerasUsuario{
+        private final UserDashBoardResponse.InformacionBauleras informacion;
+        private final Integer cantidadTotal;
+        private final BigDecimal valorMensualTotal;
     }
 
     /*=================METODOS DE CALCULO PRINCIPOALES=======================*/
@@ -140,7 +171,69 @@ public class DashBoardService {
                 .build();
     }
 
+    private EstadisticasBaulerasUsuario calcularEstadisticasBaulerasUsuario(List<Baulera> bauleras){
+        int cantidadTotal = bauleras.size();
+        BigDecimal valorMensualTotal = calcularValorMensualUsuario(bauleras);
+        Map<String, BigDecimal> valorPorTipo = agruparValorPorTipo(bauleras);
+        Map<String, Integer> cantidadPorTipo = agruparCantidadPorTipoUsuario(bauleras);
+
+        UserDashBoardResponse.InformacionBauleras informacion =
+                UserDashBoardResponse.InformacionBauleras.builder()
+                        .cantidadTotalBauleras(cantidadTotal)
+                        .valorMensualTotal(valorMensualTotal)
+                        .valorPorTipo(valorPorTipo)
+                        .cantidadPorTipo(cantidadPorTipo)
+                        .build();
+
+        return new EstadisticasBaulerasUsuario(informacion,cantidadTotal,valorMensualTotal);
+    }
+
     /*=================METODOS DE CALUCLO AUXILIARES===========================*/
+    private List<Baulera> obtenerBauleras(Long idUsuario){
+        return bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);
+    }
+
+    private BigDecimal calcularValorMensualUsuario(List<Baulera> bauleras){
+        return bauleras.stream()
+                .map(b-> BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private Map<String, Integer> agruparCantidadPorTipoUsuario(List<Baulera> bauleras){
+        return bauleras.stream()
+                .collect(Collectors.groupingBy(
+                        b-> b.getTipoBaulera().getTipoBauleraNombre(),
+                        Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
+                ));
+    }
+
+    private List<BauleraResponse> convertirBauleraAResponse(List<Baulera> bauleras){
+        return bauleras.stream()
+                .map(bauleraMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private UserDashBoardResponse.ResumenUsuario construirResumen(Usuario usuario){
+        String mensajeEstado = determinarMensajeEstado((usuario.getDeudaAcumulada()));
+
+        return UserDashBoardResponse.ResumenUsuario.builder()
+                .deudaAcumulada(usuario.getDeudaAcumulada())
+                .mensajeEstado(mensajeEstado)
+                .build();
+    }
+
+    private String determinarMensajeEstado(BigDecimal deuda) {
+        if (deuda == null || deuda.compareTo(BigDecimal.ZERO) == 0) {
+            return "✅ Sin deuda";
+        } else if (deuda.compareTo(new BigDecimal("50000")) < 0) {
+            return "⚠️ Deuda baja";
+        } else if (deuda.compareTo(new BigDecimal("150000")) < 0) {
+            return "⚠️ Deuda moderada";
+        } else {
+            return "🚨 Deuda alta - Contactar administración";
+        }
+    }
+
     private long contarBaulerasOcupadas(List<Baulera> bauleras){
         return bauleras.stream()
                 .filter(b -> b.getEstadoBaulera() == ESTADO_BAULERA.ocupada)

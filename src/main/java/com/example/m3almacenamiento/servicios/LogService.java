@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -17,7 +18,9 @@ import java.util.List;
 public class LogService {
     private final LogRepositorio logRepositorio;
 
-    public PaginacionResponse<Log> obtenerLogsPaginados(Integer pagina, Integer tamanio) {
+    public PaginacionResponse<Log> obtenerLogsPaginados(
+            @RequestParam(defaultValue = "1") Integer pagina,
+            @RequestParam(defaultValue = "15") Integer tamanio) {
         Pageable pageable = PageRequest.of(pagina - 1, tamanio, Sort.by("fecha").descending());
         Page<Log> paginaLog = logRepositorio.findAll(pageable);
 
