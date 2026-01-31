@@ -3,9 +3,12 @@ package com.example.m3almacenamiento.servicios;
 import com.example.m3almacenamiento.configuracion.ContactConfig;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,6 +29,15 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final ContactConfig contactConfig;
+
+    @Value("${spring.mail.username}")
+    private String remiteteEmail;
+
+    @PostConstruct
+    public void logConfig() {
+        log.info("✅ Configuración de email cargada:");
+        log.info("   Username: {}", remiteteEmail);  // Esto debería mostrar tu email completo
+    }
 
     /*
     * Envia una notificacion de Deuda actualizada
@@ -52,15 +65,25 @@ public class EmailService {
             variables.put("nroBauleras", baulerasNombres);
             variables.put("totalCalculado", totalCalculado);
 
-            String logoBase64= convertirImagenABase64();
-            variables.put("logoBase64", logoBase64);
+            try {
+                String logoBase64 = convertirImagenABase64();
+                variables.put("logoBase64", logoBase64);
+            } catch (Exception e) {
+                log.error("Error al convertir imagen a Base64 en notificación de deuda", e);
+                variables.put("logoBase64", "");
+            }
 
             //Info de contacto de la empresa
 
-            variables.put("telefonoContacto", contactConfig.getContacto().getTelefono() );
-            variables.put("emailContacto", contactConfig.getContacto().getEmail() );
-            variables.put("direccion", contactConfig.getContacto().getDireccion() );
-            variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
+            if (contactConfig != null && contactConfig.getContacto() != null) {
+                variables.put("telefonoContacto", contactConfig.getContacto().getTelefono());
+                variables.put("emailContacto", contactConfig.getContacto().getEmail() );
+                variables.put("direccion", contactConfig.getContacto().getDireccion() );
+                variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
+            } else {
+                log.error("Configuración de contacto no disponible");
+                return;
+            }
 
             enviarEmailTemplate(
                     usuario.getEmail(),
@@ -88,14 +111,24 @@ public class EmailService {
             variables.put("montoMensual", baulera.getTipoBaulera().getPrecioMensual());
 
             // Datos de la empresa
-            variables.put("telefonoContacto", contactConfig.getContacto().getTelefono() );
-            variables.put("emailContacto", contactConfig.getContacto().getEmail() );
-            variables.put("direccion", contactConfig.getContacto().getDireccion() );
-            variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
+            if (contactConfig != null && contactConfig.getContacto() != null) {
+                variables.put("telefonoContacto", contactConfig.getContacto().getTelefono());
+                variables.put("emailContacto", contactConfig.getContacto().getEmail() );
+                variables.put("direccion", contactConfig.getContacto().getDireccion() );
+                variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
+            } else {
+                log.error("Configuración de contacto no disponible");
+                return;
+            }
 
             // Logo para el mail en Base64
-            String logoBase64= convertirImagenABase64();
-            variables.put("logoBase64", logoBase64);
+            try {
+                String logoBase64 = convertirImagenABase64();
+                variables.put("logoBase64", logoBase64);
+            } catch (IOException e) {
+                log.error("Error al convertir imagen a Base64", e);
+                variables.put("logoBase64", ""); // valor por defecto
+            }
 
             enviarEmailTemplate(
                     usuario.getEmail(),
@@ -105,6 +138,7 @@ public class EmailService {
 
         }catch(Exception e){
             log.error("❌ Error al enviar el mail ");
+            e.printStackTrace();
         }
     }
 
@@ -127,8 +161,9 @@ public class EmailService {
             //Al poner true estamos diciendo que es un HTML lo que estamos mandando y que
             //Lo procese como tal
             helper.setText(htmlContent, true);
-            helper.setFrom("M3 Almacenamiento");
+            helper.setFrom(remiteteEmail,"M3 Almacenamiento");
 
+            log.info("Emviando mail...");
             mailSender.send(mimeMessage);
 
             log.info("Mail enviado: {} -> {}", asunto,destinatario);
@@ -154,7 +189,7 @@ public class EmailService {
     }
 
     private String convertirImagenABase64() throws Exception{
-        ClassPathResource resource = new ClassPathResource("src/main/resources/static/img/logo.png");
+        ClassPathResource resource = new ClassPathResource("/static/img/logo.png");
 
         byte[] imageBytes = Files.readAllBytes(Paths.get(resource.getURI()));
         String base64img = Base64.getEncoder().encodeToString(imageBytes);

@@ -33,6 +33,7 @@ public class BauleraService {
     private final BauleraMapper bauleraMapper;
     private final TipoBauleraRepositorio tipoBauleraRepositorio;
     private final UsuarioRepositorio usuarioRepositorio;
+    private final EmailService emailService;
 
     @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse crear(BauleraRequest bauleraRequest){
@@ -182,6 +183,8 @@ public class BauleraService {
         baulera.setFechaAsignacion(new Date());
 
         Baulera bauleraGuardada =  bauleraRepositorio.save(baulera);
+
+        emailService.enviarNotificacionDeAsignacion(usuario,bauleraGuardada);
 
         return bauleraMapper.toResponse(bauleraGuardada);
     }
