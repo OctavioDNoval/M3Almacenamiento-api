@@ -27,10 +27,11 @@ public class UsuarioController {
     @GetMapping("/admin/getPagina")
     public ResponseEntity<PaginacionResponse<UsuarioResponse>> obtenerTodosPaginado(
             @RequestParam(defaultValue = "1") Integer pagina,
-            @RequestParam(defaultValue = "15") Integer tamanio
+            @RequestParam(defaultValue = "15") Integer tamanio,
+            @RequestParam(defaultValue = "idUsuario") String sortBy
     ){
         PaginacionResponse<UsuarioResponse> paginaResponse = usuarioService
-                .obtenerTodosPaginados(pagina, tamanio);
+                .obtenerTodosPaginados(pagina, tamanio,sortBy);
 
         return ResponseEntity.ok(paginaResponse);
     }

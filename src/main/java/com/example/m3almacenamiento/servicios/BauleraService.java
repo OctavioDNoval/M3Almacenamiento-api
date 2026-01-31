@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -115,8 +116,14 @@ public class BauleraService {
         return bauleraMapper.toResponse(baulera);
     }
 
-    public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio) {
-        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by("nroBaulera").descending());
+    public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy) {
+        List<String> casosPermitidos= Arrays.asList("idBaulera", "nroBaulera", "tipoBauleraNombre","nombreUsuario","estadoBaulera");
+
+        if(!casosPermitidos.contains(sortBy)){
+            sortBy = "idUsuario";
+        }
+
+        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by(sortBy).descending());
         Page<Baulera> paginaBaulera = bauleraRepositorio.findAll(pageable);
 
         List<BauleraResponse> contenido = paginaBaulera.getContent()

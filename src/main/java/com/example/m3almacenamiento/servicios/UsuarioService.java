@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,8 +54,16 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
-    public PaginacionResponse<UsuarioResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio){
-        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by("idUsuario").descending());
+    public PaginacionResponse<UsuarioResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy){
+        List<String> casosPermitidos = Arrays.asList("idUsuario", "nombreCompleto", "email", "deudaAcumulada");
+
+        if(!casosPermitidos.contains(sortBy)){
+            sortBy = "idUsuario";
+        }
+
+
+
+        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by(sortBy).descending());
         Page<Usuario> paginaUsuarios = usuarioRepositorio.findAll(pageable);
 
         List<UsuarioResponse> contenido = paginaUsuarios.getContent()

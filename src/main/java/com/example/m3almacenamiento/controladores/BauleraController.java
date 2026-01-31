@@ -5,6 +5,7 @@ import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.servicios.BauleraService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,10 +40,11 @@ public class BauleraController {
     @GetMapping("/admin/obtenerTodo/pagina")
     public ResponseEntity<PaginacionResponse<BauleraResponse>> obtenerTodosPaginado(
             @RequestParam(defaultValue = "1") Integer pagina,
-            @RequestParam(defaultValue = "15") Integer tamanio
-    ){
+            @RequestParam(defaultValue = "15") Integer tamanio,
+            @RequestParam(defaultValue = "idBaulera") String sortBy,
+            Sort sort){
         PaginacionResponse<BauleraResponse> paginaResponse = bauleraService
-                .obtenerTodosPaginados(pagina, tamanio);
+                .obtenerTodosPaginados(pagina, tamanio, sortBy);
         System.out.println(paginaResponse);
 
         return ResponseEntity.ok(paginaResponse);
