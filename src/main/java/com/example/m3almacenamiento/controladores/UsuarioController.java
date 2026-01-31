@@ -7,6 +7,7 @@ import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import com.example.m3almacenamiento.servicios.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UsuarioController {
     private  final UsuarioService usuarioService;
 
@@ -28,10 +30,22 @@ public class UsuarioController {
     public ResponseEntity<PaginacionResponse<UsuarioResponse>> obtenerTodosPaginado(
             @RequestParam(defaultValue = "1") Integer pagina,
             @RequestParam(defaultValue = "15") Integer tamanio,
-            @RequestParam(defaultValue = "idUsuario") String sortBy
+            @RequestParam(defaultValue = "idUsuario") String sortBy,
+            @RequestParam(defaultValue = "") String filter
     ){
-        PaginacionResponse<UsuarioResponse> paginaResponse = usuarioService
-                .obtenerTodosPaginados(pagina, tamanio,sortBy);
+        log.info("📥 ENDPOINT LLAMADO - Parámetros recibidos:");
+        log.info("   pagina: {}", pagina);
+        log.info("   tamanio: {}", tamanio);
+        log.info("   sortBy: '{}'", sortBy);
+        log.info("   search: '{}'", filter);
+
+        PaginacionResponse paginaResponse = new PaginacionResponse();
+
+        if(filter == null || filter.trim().isEmpty()){
+            paginaResponse = usuarioService.obtenerTodosPaginados(pagina, tamanio, sortBy);
+        }else{
+            paginaResponse = usuarioService.obtenerPaginadoConFiltro(pagina, tamanio, sortBy, filter);
+        }
 
         return ResponseEntity.ok(paginaResponse);
     }

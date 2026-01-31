@@ -20,10 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -117,6 +114,24 @@ public class BauleraService {
     }
 
     public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy) {
+        Map<String, String> mapeoCampos = new HashMap<>();
+        mapeoCampos.put("idBaulera", "idBaulera");
+        mapeoCampos.put("nroBaulera", "nroBaulera");
+        mapeoCampos.put("tipoBauleraNombre", "tipoBaulera.tipoBauleraNombre"); // ← Mapeo clave
+        mapeoCampos.put("estadoBaulera", "estadoBaulera");
+        mapeoCampos.put("cliente", "usuarioAsignado.nombreCompleto");
+
+        String campoReal = mapeoCampos.getOrDefault(sortBy, "idBaulera");
+        Sort sort = Sort.by(campoReal).descending();
+
+        Pageable pageable = PageRequest.of(pagina-1, tamanio, sort);
+        Page<Baulera> paginaBaulera = bauleraRepositorio.findAll(pageable);
+
+        return getBauleraResponsePaginacionResponse(pagina, tamanio, paginaBaulera);
+    }
+
+    public PaginacionResponse<BauleraResponse> obtenerPaginadoConFiltro (Integer pagina, Integer tamanio, String sortBy, String filter ){
+
         List<String> casosPermitidos= Arrays.asList("idBaulera", "nroBaulera", "tipoBauleraNombre","nombreUsuario","estadoBaulera");
 
         if(!casosPermitidos.contains(sortBy)){
@@ -124,8 +139,13 @@ public class BauleraService {
         }
 
         Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by(sortBy).descending());
-        Page<Baulera> paginaBaulera = bauleraRepositorio.findAll(pageable);
+        Page<Baulera> paginaBaulera = bauleraRepositorio.findBySearch(filter,pageable);
 
+
+        return getBauleraResponsePaginacionResponse(pagina, tamanio, paginaBaulera);
+    }
+
+    private PaginacionResponse<BauleraResponse> getBauleraResponsePaginacionResponse(Integer pagina, Integer tamanio, Page<Baulera> paginaBaulera) {
         List<BauleraResponse> contenido = paginaBaulera.getContent()
                 .stream()
                 .map(bauleraMapper::toResponse)
@@ -141,7 +161,6 @@ public class BauleraService {
                 .esPrimera(paginaBaulera.isFirst())
                 .build();
     }
-
 
     public List<BauleraResponse> obtenerPorIdUsuario(Long idUsuario){
         List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);

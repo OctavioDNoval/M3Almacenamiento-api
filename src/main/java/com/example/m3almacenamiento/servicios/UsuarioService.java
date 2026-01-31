@@ -61,11 +61,20 @@ public class UsuarioService {
             sortBy = "idUsuario";
         }
 
-
-
         Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by(sortBy).descending());
         Page<Usuario> paginaUsuarios = usuarioRepositorio.findAll(pageable);
 
+        return getUsuarioResponsePaginacionResponse(pagina, tamanio, paginaUsuarios);
+    }
+
+    public PaginacionResponse<UsuarioResponse> obtenerPaginadoConFiltro(Integer pagina, Integer tamanio, String sortBy, String filter){
+        Pageable pageable = PageRequest.of(pagina-1, tamanio, Sort.by(sortBy).descending());
+        Page<Usuario> paginaUsuarios = usuarioRepositorio.findBySearch(filter,pageable);
+
+        return getUsuarioResponsePaginacionResponse(pagina, tamanio, paginaUsuarios);
+    }
+
+    private PaginacionResponse<UsuarioResponse> getUsuarioResponsePaginacionResponse(Integer pagina, Integer tamanio, Page<Usuario> paginaUsuarios) {
         List<UsuarioResponse> contenido = paginaUsuarios.getContent()
                 .stream()
                 .map(usuarioMapper::toResponse)
