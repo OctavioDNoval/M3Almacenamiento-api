@@ -106,6 +106,14 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
+    public List<BauleraResponse> obtenerTodosDisponibles (){
+        List<Baulera>  bauleras = bauleraRepositorio.findAllDisponible();
+        return bauleras
+                .stream()
+                .map(bauleraMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public BauleraResponse obtenerPorId(Long id){
         Baulera baulera = bauleraRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
@@ -214,4 +222,5 @@ public class BauleraService {
 
         return bauleraMapper.toResponse(bauleraGuardada);
     }
+
 }

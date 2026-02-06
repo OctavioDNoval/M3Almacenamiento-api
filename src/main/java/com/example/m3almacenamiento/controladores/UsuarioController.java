@@ -12,6 +12,7 @@ import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -20,6 +21,8 @@ import java.util.List;
 @Slf4j
 public class UsuarioController {
     private  final UsuarioService usuarioService;
+
+    /*================GET================*/
 
     @GetMapping("/admin/getAll")
     public ResponseEntity<List<UsuarioResponse>> getAll(){
@@ -50,10 +53,14 @@ public class UsuarioController {
         return ResponseEntity.ok(paginaResponse);
     }
 
+    /*=======================POST========================*/
+
     @PostMapping("/admin/alta/usuario")
     public ResponseEntity<UsuarioResponse> darDeAltaUsuario (@RequestBody UsuarioRequest usuarioRequest){
         return ResponseEntity.ok(usuarioService.crear(usuarioRequest));
     }
+
+    /*=========================PATCH=======================*/
 
     @PatchMapping("/admin/alta/usuarioCreado/{idUsuario}")
     public ResponseEntity<UsuarioResponse> darDeAltaCreadoUsuario (@PathVariable Long idUsuario){
@@ -69,6 +76,11 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponse> asginarBauleras (@PathVariable Long idUsuario,
                                                             @RequestBody List<Long> idBauleras){
         return ResponseEntity.ok(usuarioService.asignarBauleras(idUsuario, idBauleras));
+    }
+
+    @PatchMapping("/admin/reducirDeuda/{idUsuario}")
+    public ResponseEntity<UsuarioResponse> reducirDeuda (@PathVariable Long idUsuario, @RequestParam Integer montoAReducir){
+        return ResponseEntity.ok(usuarioService.reducirDeuda(idUsuario,montoAReducir));
     }
 
 }

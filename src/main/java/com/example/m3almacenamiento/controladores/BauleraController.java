@@ -27,6 +27,12 @@ public class BauleraController {
         return ResponseEntity.ok(lista);
     }
 
+    @GetMapping("/admin/obtenerDisponibles")
+    public ResponseEntity<List<BauleraResponse>> obtenerDisponibles(){
+        List<BauleraResponse> bauleras = bauleraService.obtenerTodosDisponibles();
+        return ResponseEntity.ok(bauleras);
+    }
+
     @GetMapping("/user/obtener-x-id/{idBaulera}")
     public ResponseEntity<BauleraResponse> obtenerPorId(@PathVariable Long idBaulera){
         BauleraResponse bauleraPorId = bauleraService.obtenerPorId(idBaulera);

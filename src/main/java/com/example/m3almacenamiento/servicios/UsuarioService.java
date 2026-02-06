@@ -11,14 +11,17 @@ import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class UsuarioService {
 
     private final UsuarioRepositorio usuarioRepositorio;
@@ -185,6 +189,33 @@ public class UsuarioService {
         }
 
         Usuario usuarioActualizado = usuarioRepositorio.save(usuario);
+
+        return usuarioMapper.toResponse(usuarioActualizado);
+    }
+
+    @CacheEvict(value = "dashboard", allEntries = true)
+    public UsuarioResponse reducirDeuda(Long idUsuario, Integer montoAReducir){
+        if(montoAReducir == null || montoAReducir <= 0){
+            throw new IllegalArgumentException("El monto a reducir debe ser mayor a 0");
+        }
+
+        Usuario u = usuarioRepositorio.findById(idUsuario)
+                .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
+
+        BigDecimal deudaAcumulada = u.getDeudaAcumulada();
+        BigDecimal monto = BigDecimal.valueOf(montoAReducir);
+
+        if(deudaAcumulada.compareTo(monto) < 0){
+            throw new RuntimeException("Monto a reducir mayor a la deuda");
+        }
+
+        BigDecimal nuevaDeuda = deudaAcumulada.subtract(monto);
+        u.setDeudaAcumulada(nuevaDeuda);
+
+        Usuario usuarioActualizado = usuarioRepositorio.save(u);
+
+        log.info("Deuda reducida para usuario {}: {} -> {}",
+                idUsuario, deudaAcumulada, nuevaDeuda);
 
         return usuarioMapper.toResponse(usuarioActualizado);
     }

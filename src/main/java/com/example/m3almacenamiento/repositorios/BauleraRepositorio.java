@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.repositorios;
 
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
+import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,6 +17,9 @@ public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
     Boolean existsByNroBaulera(String nroBaulera);
     List<Baulera> findByUsuarioAsignado_IdUsuario(Long idUsuario);
     Boolean existsBynroBaulera(String nroBaulera);
+
+    @Query(value = "SELECT * FROM baulera b WHERE b.estado_baulera = 'disponible'", nativeQuery = true)
+    List<Baulera> findAllDisponible();
 
     @Query(value = "select max(cast(b.nroBaulera as integer)) from Baulera b")
     Optional<Integer> findMaxNroBauleraAsInteger();
