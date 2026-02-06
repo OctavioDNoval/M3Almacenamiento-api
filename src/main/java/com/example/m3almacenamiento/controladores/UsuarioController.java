@@ -55,6 +55,11 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.crear(usuarioRequest));
     }
 
+    @PatchMapping("/admin/alta/usuarioCreado/{idUsuario}")
+    public ResponseEntity<UsuarioResponse> darDeAltaCreadoUsuario (@PathVariable Long idUsuario){
+        return ResponseEntity.ok(usuarioService.darDeAlataUsuarioCreado(idUsuario));
+    }
+
     @PatchMapping("/admin/baja/usuario/{idUsuario}")
     public ResponseEntity<UsuarioResponse> darDeBajaUsuario (@PathVariable Long idUsuario){
         return ResponseEntity.ok(usuarioService.darDeBaja(idUsuario));

@@ -163,6 +163,16 @@ public class UsuarioService {
     }
 
     @CacheEvict(value = "dashboard", allEntries = true)
+    public UsuarioResponse darDeAlataUsuarioCreado (Long idUsuario){
+        Usuario u = usuarioRepositorio.findById(idUsuario)
+                .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
+        u.setEstado(ESTADO_USUARIO.activo);
+
+        Usuario usuarioGuardado = usuarioRepositorio.save(u);
+        return usuarioMapper.toResponse(usuarioGuardado);
+    }
+
+    @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse asignarBauleras(Long usuarioId, List<Long> idBauleras){
         //Metodo que depende de bauleraService
         Usuario usuario = usuarioRepositorio.findById(usuarioId)
