@@ -1,8 +1,10 @@
 package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.configuracion.ContactConfig;
+import com.example.m3almacenamiento.modelo.DTO.InfoDeudaEmail;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
+import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import jakarta.annotation.PostConstruct;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
     private final ContactConfig contactConfig;
+    private final BauleraRepositorio bauleraRepositorio;
 
     @Value("${spring.mail.username}")
     private String remiteteEmail;
@@ -43,28 +46,40 @@ public class EmailService {
     * Envia una notificacion de Deuda actualizada
     * se llama desde pagos scheduler
     * */
-    public void enviarNotificacionDeuda(Usuario usuario, BigDecimal montoMensual, BigDecimal nuevaDeudaTotal) {
+    public void enviarNotificacionDeuda(Usuario usuario, InfoDeudaEmail infoEmail) {
         try{
             Map<String,Object> variables = new HashMap<>();
             variables.put("nombre", usuario.getNombreCompleto());
 
             String mesActual = getNombreMesActual();
             variables.put("mes", mesActual);
-            variables.put("deudaTotal", nuevaDeudaTotal);
+            variables.put("deudaTotal", infoEmail.getNuevaDeudaTotaL());
 
             BigDecimal totalCalculado = BigDecimal.ZERO;
             List<String> bauleras = new ArrayList<>();
 
-            for(Baulera b : usuario.getBauleras()){
-                bauleras.add(b.getNroBaulera());
-                totalCalculado = totalCalculado.add(BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual()));
-            }
+            /*try{
+                int cantidadBauleras = usuario.getBauleras().size();
+                log.info("Usuario tiene {} bauleras", cantidadBauleras);
 
-            String baulerasNombres = String.join(", ", bauleras);
+                for(Baulera b : usuario.getBauleras()){
+                    bauleras.add(b.getNroBaulera());
+                    totalCalculado = totalCalculado.add(BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual()));
+                }
+            }catch(Exception e){
+                log.error("Error al acceder a las bauleras del usuario: {} | {}", usuario.getNombreCompleto(), e.getMessage());
+                List<Baulera> baulerasUsuario = bauleraRepositorio.findByUsuarioAsignado_IdUsuario(usuario.getIdUsuario());
+                for(Baulera b : baulerasUsuario){
+                    bauleras.add(b.getNroBaulera());
+                    totalCalculado = totalCalculado.add(BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual()));
+                }
+            }*/
 
-            variables.put("nroBauleras", baulerasNombres);
-            variables.put("totalCalculado", totalCalculado);
 
+            variables.put("nroBauleras", infoEmail.getNumerosBauleras());
+            variables.put("totalCalculado", infoEmail.getTotalCalculado());
+            variables.put("montoMensual", infoEmail.getMontoMensual());
+            variables.put("deudaAnterior", infoEmail.getDeudaAnterior());
             try {
                 String logoBase64 = convertirImagenABase64();
                 variables.put("logoBase64", logoBase64);
@@ -82,17 +97,20 @@ public class EmailService {
                 variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
             } else {
                 log.error("Configuración de contacto no disponible");
-                return;
+                variables.put("telefonoContacto", "N/A");
+                variables.put("emailContacto", "N/A" );
+                variables.put("direccion", "N/A" );
+                variables.put("horarioAtencion", "N/A");
             }
 
             enviarEmailTemplate(
                     usuario.getEmail(),
-                    "Recordatorio Pago Bauleras" + mesActual,
+                    "Recordatorio Pago Bauleras " + mesActual,
                     "EmailDeudaTemplate",
                     variables);
 
         }catch(Exception e){
-            log.error("❌ Error al enviar el mail ");
+            log.error("❌ Error al enviar el mail: {} ", e.getMessage());
         }
     }
 

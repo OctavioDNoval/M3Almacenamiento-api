@@ -21,6 +21,12 @@ public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
     @Query(value = "SELECT * FROM baulera b WHERE b.estado_baulera = 'disponible'", nativeQuery = true)
     List<Baulera> findAllDisponible();
 
+    @Query("SELECT DISTINCT b FROM Baulera b " +
+            "LEFT JOIN FETCH b.usuarioAsignado " +
+            "LEFT JOIN FETCH b.tipoBaulera " +
+            "WHERE b.estadoBaulera = 'ocupada'")
+    List<Baulera> findAllOcupadas();
+
     @Query(value = "select max(cast(b.nroBaulera as integer)) from Baulera b")
     Optional<Integer> findMaxNroBauleraAsInteger();
 

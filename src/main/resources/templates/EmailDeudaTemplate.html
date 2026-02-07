@@ -1,137 +1,259 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Recordatorio Deuda</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recordatorio de Pago Baulera</title>
+    <!-- Solo estilos muy básicos que algunos clientes aceptan -->
     <style>
-        html {
-            width: 400px;
-            font-family: sans-serif;
-        }
+        /* Solo estilos de texto */
         body {
-            width: 400px;
-            background-color: #ccc;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
             margin: 0;
-            height: auto;
+            padding: 0;
+            background-color: #f4f4f4;
         }
-        main {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+
+        /* Ocultar en algunos clientes que no soportan media queries */
+        .mobile-hide { display: block; }
+        @media only screen and (max-width: 480px) {
+            .mobile-hide { display: none; }
         }
-        h1 {
-            margin: 2rem 0 0 0;
+
+        /* Estilos para resaltar montos */
+        .monto-destacado {
+            color: #28a745;
+            font-weight: bold;
         }
-        h3 {
-            margin-top: 4px;
+
+        .deuda-total {
+            font-size: 32px;
+            font-weight: bold;
+            color: #162d5a;
+        }
+
+        .mes-actual {
+            color: #666;
             font-style: italic;
         }
-        footer {
-            background-color: rgb(22, 45, 90);
-            margin: 0;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-        }
-        footer p {
-            margin: 0;
-        }
-        .container {
-            width: 100%;
-        }
-        .name-container {
-            width: 100%;
-            background-color: rgb(22, 45, 90);
-            border-bottom-left-radius: 16px;
-            border-bottom-right-radius: 16px;
-        }
-        .img-title {
-            width: 100%;
-        }
-        .main-name-container {
-            margin: 16px 0;
-        }
-        .main-deuda-total {
-            padding: 16px 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-        .deuda-total-circle {
-            border: 2px solid rgb(7, 173, 65);
-            width: 50%;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .monto-total {
-            font-size: 1.8rem;
-        }
-        .main-info-deuda {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 3rem;
-        }
-        .footer-info-contact {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 0;
-        }
-        .footer-info-variable {
-            color: #ccc;
-            opacity: 0.6;
-        }
-        .footer-info-extra {
-            text-align: center;
-            font-style: italic;
-            opacity: 0.7;
+
+        .info-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #162d5a;
         }
     </style>
 </head>
-<body>
-<div class="container">
-    <header class="name-container">
-        <img th:src="${logoBase64}"
-             alt="M3 almacenamiento"
-             class="img-title" />
-    </header>
-    <main>
-        <h1>Monto Baulera/s</h1>
-        <h3 th:text="${mes}">Mes actual</h3>
-        <div class="main-name-container">
-            <span>Hola <strong th:text="${nombre}">Nombre</strong>!</span>
-        </div>
-        <div class="main-deuda-total">
-            <div class="deuda-total-circle">
-                <span th:text="'$' + ${deudaTotal}">$Error</span>
-            </div>
-        </div>
-        <div class="main-info-deuda">
-            <div class="main-info-deuda-bauleras">
-                <p>A razon de las Baulera/s</p>
-                <strong th:text="${nroBauleras}">""</strong>
-            </div>
-            <div class="main-info-deuda-monto">
-                <p>Por un monto total de:</p>
-                <strong th:text="'$' + ${totalCalculado}">$0</strong>
-            </div>
-        </div>
-    </main>
-    <footer>
-        <div class="footer-info-contact">
-            <p class="footer-info-variable" th:text="${emailContacto}">email@empresa.com</p>
-            <p class="footer-info-variable" th:text="${telefonoContacto}">+XX XXX XXX XXXX</p>
-            <p class="footer-info-variable" th:text="${direccion}">Dirección</p>
-            <p class="footer-info-variable" th:text="${horarioAtencion}">Horario</p>
-        </div>
-        <p class="footer-info-extra">No valido como factura</p>
-    </footer>
-</div>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+
+<!-- WRAPPER - Usar tabla para máxima compatibilidad -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f4">
+    <tr>
+        <td align="center">
+            <!-- CONTENEDOR PRINCIPAL - Ancho fijo para email -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px; margin: 20px auto; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+
+                <!-- HEADER CON LOGO -->
+                <tr>
+                    <td align="center" bgcolor="#162d5a" style="padding: 20px;">
+                        <img th:if="${logoBase64 != null and logoBase64 != ''}"
+                             th:src="${logoBase64}"
+                             alt="M3 Almacenamiento"
+                             width="200"
+                             height="50"
+                             style="display: block; width: 200px; height: auto; max-width: 200px; border: 0; outline: none;"
+                             border="0">
+                    </td>
+                </tr>
+
+                <!-- TÍTULO PRINCIPAL -->
+                <tr>
+                    <td style="padding: 30px 20px 10px; text-align: center;">
+                        <h1 style="margin: 0; color: #162d5a; font-size: 24px;">
+                            Recordatorio de Pago
+                        </h1>
+                        <p class="mes-actual" style="margin: 5px 0 0 0; font-size: 14px;"
+                           th:text="${mes}">
+                            Mes actual
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- SALUDO -->
+                <tr>
+                    <td style="padding: 15px 20px; text-align: center;">
+                        <p style="margin: 0; font-size: 16px;">
+                            Hola <strong th:text="${nombre}">Nombre</strong>,
+                        </p>
+                        <p style="margin: 10px 0 0 0; font-size: 16px;">
+                            Este es el resumen de tu deuda correspondiente al mes actual.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- SECCIÓN DE DEUDA TOTAL -->
+                <tr>
+                    <td style="padding: 20px 20px 0;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td align="center" style="padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                                    <p style="margin: 0 0 10px 0; font-size: 16px; color: #666;">
+                                        Deuda total acumulada:
+                                    </p>
+                                    <div class="deuda-total"
+                                         th:text="'$' + ${#numbers.formatDecimal(deudaTotal, 1, 2, 'COMMA')}">
+                                        $0.00
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- DETALLE DE CARGOS DEL MES -->
+                <tr>
+                    <td style="padding: 20px;">
+                        <table width="100%" cellpadding="15" cellspacing="0" border="0"
+                               style="border-collapse: collapse; border: 1px solid #e9ecef; border-radius: 8px;">
+                            <tr>
+                                <td colspan="2" style="padding-bottom: 10px; border-bottom: 1px solid #e9ecef;">
+                                    <h3 style="margin: 0; color: #162d5a; font-size: 18px;">
+                                        Cargos del mes actual
+                                    </h3>
+                                </td>
+                            </tr>
+
+                            <!-- INFORMACIÓN DE BAULERAS -->
+                            <tr>
+                                <td width="60%" style="padding: 10px 0; color: #666;">
+                                    Baulera(s) a cargo:
+                                </td>
+                                <td width="40%" style="padding: 10px 0; text-align: right; font-weight: bold;">
+                                    <span th:text="${nroBauleras}">
+                                        1, 15
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <!-- MONTO MENSUAL -->
+                            <tr>
+                                <td style="padding: 10px 0; color: #666;">
+                                    Monto mensual:
+                                </td>
+                                <td style="padding: 10px 0; text-align: right;">
+                                    <span class="monto-destacado"
+                                          th:text="'$' + ${#numbers.formatDecimal(montoMensual, 1, 2, 'COMMA')}">
+                                        $0.00
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <!-- DEUDA ANTERIOR -->
+                            <tr>
+                                <td style="padding: 10px 0; color: #666;">
+                                    Deuda anterior:
+                                </td>
+                                <td style="padding: 10px 0; text-align: right;">
+                                    <span th:text="'$' + ${#numbers.formatDecimal(deudaAnterior, 1, 2, 'COMMA')}">
+                                        $0.00
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <!-- SEPARADOR -->
+                            <tr>
+                                <td colspan="2" style="padding: 5px 0; border-top: 1px solid #e9ecef;"></td>
+                            </tr>
+
+                            <!-- NUEVA DEUDA -->
+                            <tr>
+                                <td style="padding: 10px 0; font-weight: bold; color: #162d5a;">
+                                    Nueva deuda total:
+                                </td>
+                                <td style="padding: 10px 0; text-align: right; font-weight: bold;">
+                                    <span class="deuda-total" style="font-size: 18px;"
+                                          th:text="'$' + ${#numbers.formatDecimal(deudaTotal, 1, 2, 'COMMA')}">
+                                        $145,000.00
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- INFORMACIÓN IMPORTANTE -->
+                <tr>
+                    <td style="padding: 0 20px 20px;">
+                        <table width="100%" cellpadding="15" cellspacing="0" border="0" class="info-box">
+                            <tr>
+                                <td>
+                                    <p style="margin: 0; font-size: 14px; color: #666;">
+                                        <strong>Importante:</strong> Este monto corresponde al cargo mensual por el uso de las bauleras.
+                                        Para cualquier consulta o aclaración, por favor contactarnos.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- INFORMACIÓN DE CONTACTO -->
+                <tr>
+                    <td bgcolor="#162d5a" style="padding: 30px 20px; color: #ffffff;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td align="center" style="padding: 5px 0;">
+                                    <span style="color: #cccccc; font-size: 14px;"
+                                          th:text="${emailContacto}">
+                                        3AImagenamiento@gmail.com
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 5px 0;">
+                                    <span style="color: #cccccc; font-size: 14px;"
+                                          th:text="${telefonoContacto}">
+                                        223422700
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 5px 0;">
+                                    <span style="color: #cccccc; font-size: 14px;"
+                                          th:text="${direccion}">
+                                        República de Cuba 60, Mar del Plata
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" style="padding: 5px 0;">
+                                    <span style="color: #cccccc; font-size: 14px;"
+                                          th:text="${horarioAtencion}">
+                                        Lunes a viernes 10:00 - 14:00
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td style="padding: 15px 20px; text-align: center; background-color: #0d1c3d;">
+                        <p style="margin: 0; color: #999999; font-size: 12px; font-style: italic;">
+                            No válido como factura
+                        </p>
+                        <p style="margin: 5px 0 0 0; color: #999999; font-size: 10px;">
+                            Este es un email automático, por favor no responda a este mensaje.
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>

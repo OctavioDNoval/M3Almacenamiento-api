@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.servicios.scheduler;
 
+import com.example.m3almacenamiento.modelo.DTO.InfoDeudaEmail;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
@@ -12,10 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,76 +24,113 @@ public class PagosScheduler {
     private final EmailService emailService;
 
     /*
-     * Se ejecuta todos los dias a la 1Am
-     * Vamos a mostrar en los logs para que quede marcado
-     * Cuando se inicia el procedimiento
+     * Se ejecuta todos los meses
+     * a las 6 am y suma a los usuarios
+     * la deuda del total de sus bauleras
      * */
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "0 0 6 1 * *")
     @Transactional
     public void actualizarDeudas(){
-        log.info("==== Inciando actualizacion de deudas diarias ====");
+        log.info("==== Inciando actualizacion de deudas mensual ====");
 
-        //Buscamos que dia del mes es hoy
-        Calendar calendar = Calendar.getInstance();
-        int diaMes = calendar.get(Calendar.DAY_OF_MONTH);
-        int diaMaximoMes = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        List<Baulera> baulerasActivas = bauleraRepositorio.findAllOcupadas();
+        log.info("Total de bauleras activas: {}",baulerasActivas.size());
+        Map<Usuario, InfoDeudaEmail> infoPorUsuario = new HashMap<>();
 
-        //Buscamos las bauleras que vencen en la fecha de hoy
-        List<Baulera> baulerasAVencer = new ArrayList<>();
-
-        baulerasAVencer.addAll(bauleraRepositorio.findByDiaVencimientoPago(diaMes));
-
-        if(diaMes == diaMaximoMes){
-            for (int dia = diaMaximoMes; dia < 32; dia++){
-                baulerasAVencer.addAll(bauleraRepositorio.findByDiaVencimientoPago(dia));
-            }
-        }
-
-        log.info("Bauleras a vencer el dia {} : {}", diaMes, baulerasAVencer);
-
-        for(Baulera b : baulerasAVencer){
-            if(b.getUsuarioAsignado() == null){
-                continue;
-            }
-
-            try{
-                cobrarBaulera(b,calendar);
-            }catch(Exception e){
-                log.error("❌ Error cobrando baulera: {}, {}", b.getNroBaulera(), e.getMessage());
-            }
-        }
-        log.info("==== Actaulizacion de deudas Completada ====");
-    }
-
-    private void cobrarBaulera(Baulera baulera, Calendar hoy){
-        Usuario usuario = baulera.getUsuarioAsignado();
-
-        if(yaCobradoEsteMes(usuario, hoy)){
+        if(baulerasActivas.isEmpty()){
+            log.info("No hay bauleras ocupadas");
             return;
         }
 
-        BigDecimal precioMensual = BigDecimal.valueOf(
-                baulera.getTipoBaulera().getPrecioMensual());
+        for(Baulera b :baulerasActivas){
+            log.info("Revisando bauleras: {}", b.getNroBaulera());
+            Usuario u = b.getUsuarioAsignado();
 
-        BigDecimal deudaActual = usuario.getDeudaAcumulada() != null
-                ? usuario.getDeudaAcumulada()
-                : BigDecimal.ZERO;
+            if(u == null){
+                log.warn("Usuario no encontrado para baulera {}", b.getNroBaulera());
+                continue;
+            }
 
-        BigDecimal nuevaDeuda = deudaActual.add(precioMensual);
-        usuario.setDeudaAcumulada(nuevaDeuda);
-        usuario.setUltimaActualizacionDeuda(hoy.getTime());
-        usuarioRepositorio.save(usuario);
+            Double precioBaulera = b.getTipoBaulera().getPrecioMensual();
+            BigDecimal precioMensual = BigDecimal.valueOf(precioBaulera);
 
-        emailService.enviarNotificacionDeuda(usuario,precioMensual,nuevaDeuda);
+            InfoDeudaEmail info = infoPorUsuario.get(u);
+            if(info == null){
+                info = new InfoDeudaEmail(
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO,
+                        new ArrayList<>(),
+                        BigDecimal.ZERO,
+                        BigDecimal.ZERO
+                );
+                infoPorUsuario.put(u, info);
+            }
 
-        log.info("Deuda actualizada correctamente para \n" +
-                "Usuario: {}\n" +
-                "Baulera: {}\n" +
-                "Monto Viejo: {}\n" +
-                "Monto sumado: {}\n" +
-                "Monto nuevo: {}\n",
-                usuario.getNombreCompleto(), baulera.getNroBaulera(),deudaActual, precioMensual, nuevaDeuda);
+            info.setMontoMensual(info.getMontoMensual().add(precioMensual));
+            info.setTotalCalculado(info.getTotalCalculado().add(precioMensual));
+            info.getNumerosBauleras().add(b.getNroBaulera());
+
+            log.info("Sumando ${} por baulera {} al usuario {}",
+                    precioMensual, b.getNroBaulera(), u.getNombreCompleto());
+
+        }
+
+        int usuarioActualizados = 0;
+        for (Map.Entry<Usuario, InfoDeudaEmail> entry : infoPorUsuario.entrySet()) {
+            Usuario usuario = entry.getKey();
+            InfoDeudaEmail info = entry.getValue();
+
+            try{
+                BigDecimal deudaActual = usuario.getDeudaAcumulada() != null
+                        ? usuario.getDeudaAcumulada()
+                        : BigDecimal.ZERO;
+                info.setDeudaAnterior(deudaActual);
+
+                BigDecimal nuevaDeuda = deudaActual.add(info.getMontoMensual());
+                info.setNuevaDeudaTotaL(nuevaDeuda);
+
+                usuario.setDeudaAcumulada(nuevaDeuda);
+                usuarioRepositorio.save(usuario);
+
+                log.info("Usuario: {}, deuda anterior {} -> {} deuda nueva",
+                        usuario.getNombreCompleto(), deudaActual, nuevaDeuda);
+
+                usuarioActualizados++;
+                emailService.enviarNotificacionDeuda(usuario, info);
+            }catch(Exception e){
+                log.error("Error actualizando deuda de {}: {}", usuario.getNombreCompleto(), e.getMessage());
+            }
+        }
+        log.info("==== Actualización de deudas completada ====");
+        log.info("Usuarios actualizados: {}", usuarioActualizados);
+
+        BigDecimal totalGenerado = infoPorUsuario.values().stream()
+                .map(InfoDeudaEmail::getMontoMensual)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        log.info("Total de deuda generada este mes: {}", totalGenerado);
     }
+
+    // Cambia temporalmente el método para aislar el problema
+    @Scheduled(cron = "0 0 6 1 * *")
+    public void actualizarDeudasPrueba(){
+        log.info("==== PRUEBA DIAGNÓSTICO ====");
+
+        List<Baulera> baulerasActivas = bauleraRepositorio.findAllOcupadas();
+        log.info("Bauleras encontradas: {}", baulerasActivas.size());
+
+        for(Baulera b : baulerasActivas) {
+            log.info("--- Baulera ID: {}, NRO: {}", b.getIdBaulera(), b.getNroBaulera());
+            log.info("Usuario asignado: {}", b.getUsuarioAsignado() != null ? b.getUsuarioAsignado().getNombreCompleto() : "NULL");
+            log.info("TipoBaulera: {}", b.getTipoBaulera() != null ? b.getTipoBaulera().getTipoBauleraNombre() : "NULL");
+            if(b.getTipoBaulera() != null) {
+                log.info("Precio mensual: {}", b.getTipoBaulera().getPrecioMensual());
+            }
+            log.info("---");
+        }
+
+        log.info("==== FIN PRUEBA ====");
+    }
+
 
     private boolean yaCobradoEsteMes(Usuario u, Calendar hoy){
         if(u.getUltimaActualizacionDeuda() == null){

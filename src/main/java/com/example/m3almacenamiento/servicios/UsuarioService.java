@@ -196,6 +196,7 @@ public class UsuarioService {
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse reducirDeuda(Long idUsuario, Integer montoAReducir){
         if(montoAReducir == null || montoAReducir <= 0){
+            log.error("Monto menor o igual a 0: {}", montoAReducir);
             throw new IllegalArgumentException("El monto a reducir debe ser mayor a 0");
         }
 
@@ -206,6 +207,7 @@ public class UsuarioService {
         BigDecimal monto = BigDecimal.valueOf(montoAReducir);
 
         if(deudaAcumulada.compareTo(monto) < 0){
+            log.error("Monto ({}) es mayor a la deuda ({})",monto,deudaAcumulada);
             throw new RuntimeException("Monto a reducir mayor a la deuda");
         }
 
