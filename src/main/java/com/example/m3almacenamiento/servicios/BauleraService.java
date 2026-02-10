@@ -229,6 +229,7 @@ public class BauleraService {
                 .orElseThrow(()-> new RuntimeException("Baulera no encontrada"));
 
         b.setUsuarioAsignado(null);
+        b.setEstadoBaulera(ESTADO_BAULERA.disponible);
         Baulera bauleraGuardada =  bauleraRepositorio.save(b);
         return bauleraMapper.toResponse(bauleraGuardada);
     }
