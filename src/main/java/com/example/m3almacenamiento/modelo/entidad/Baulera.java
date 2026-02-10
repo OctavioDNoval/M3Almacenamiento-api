@@ -52,7 +52,7 @@ public class Baulera {
     private String observaciones;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tipo_baulera")
+    @JoinColumn(name = "tipo_baulera", referencedColumnName = "id_tipo_baulera")
     @NotNull(message = "El tipo de baulera es obligatorio")
     private TipoBaulera tipoBaulera;
 }

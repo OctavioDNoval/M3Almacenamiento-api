@@ -224,4 +224,13 @@ public class BauleraService {
         return bauleraMapper.toResponse(bauleraGuardada);
     }
 
+    public BauleraResponse desasignarBaulera(Long idBaulera){
+        Baulera b = bauleraRepositorio.findById(idBaulera)
+                .orElseThrow(()-> new RuntimeException("Baulera no encontrada"));
+
+        b.setUsuarioAsignado(null);
+        Baulera bauleraGuardada =  bauleraRepositorio.save(b);
+        return bauleraMapper.toResponse(bauleraGuardada);
+    }
+
 }
