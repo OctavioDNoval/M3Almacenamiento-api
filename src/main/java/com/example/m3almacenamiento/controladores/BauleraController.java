@@ -91,6 +91,11 @@ public class BauleraController {
         return ResponseEntity.ok(bauleraService.desasignarBaulera(idBaulera));
     }
 
+    @PatchMapping("/admin/asignarBaulera")
+    public ResponseEntity<BauleraResponse> asignarBaulera(@RequestParam Long idBaulera, @RequestParam Long idUsuario){
+        return ResponseEntity.ok(bauleraService.asignarBaulera(idBaulera, idUsuario));
+    }
+
     //====================DELETE==========================
     @DeleteMapping("/admin/eliminar/{idBaulera}")
     public ResponseEntity<Void> eliminar(@PathVariable Long idBaulera){

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Bienvenido a M3 Almacenamiento</title>
+		<!-- Solo estilos muy básicos que algunos clientes aceptan -->
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				line-height: 1.6;
+				color: #333;
+				margin: 0;
+				padding: 0;
+				background-color: #f4f4f4;
+			}
+			.mobile-hide {
+				display: block;
+			}
+			@media only screen and (max-width: 480px) {
+				.mobile-hide {
+					display: none;
+				}
+			}
+		</style>
+	</head>
+	<body
+		style="
+			margin: 0;
+			padding: 0;
+			background-color: #f4f4f4;
+			font-family: Arial, sans-serif;
+		"
+	>
+		<!-- WRAPPER -->
+		<table
+			width="100%"
+			cellpadding="0"
+			cellspacing="0"
+			border="0"
+			bgcolor="#f4f4f4"
+		>
+			<tr>
+				<td align="center">
+					<!-- CONTENEDOR PRINCIPAL -->
+					<table
+						width="100%"
+						cellpadding="0"
+						cellspacing="0"
+						border="0"
+						bgcolor="#ffffff"
+						style="
+							max-width: 600px;
+							margin: 20px auto;
+							border-radius: 8px;
+							overflow: hidden;
+							box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+						"
+					>
+						<!-- HEADER CON LOGO -->
+						<tr>
+							<td align="center" bgcolor="#162d5a" style="padding: 20px">
+								<img
+									th:if="${logoBase64 != null and logoBase64 != ''}"
+									th:src="${logoBase64}"
+									alt="M3 Almacenamiento"
+									width="200"
+									height="50"
+									style="
+										display: block;
+										width: 200px;
+										height: auto;
+										max-width: 200px;
+										border: 0;
+										outline: none;
+									"
+									border="0"
+								/>
+							</td>
+						</tr>
+
+						<!-- TÍTULO DE BIENVENIDA -->
+						<tr>
+							<td style="padding: 30px 20px 10px; text-align: center">
+								<h1 style="margin: 0; color: #162d5a; font-size: 24px">
+									¡Bienvenido a M3 Almacenamiento!
+								</h1>
+							</td>
+						</tr>
+
+						<!-- SALUDO Y MENSAJE DE ALTA POR ADMIN -->
+						<tr>
+							<td style="padding: 10px 20px; text-align: center">
+								<p style="margin: 0 0 15px 0; font-size: 16px">
+									Hola <strong th:text="${nombre}">Nombre</strong>
+								</p>
+								<p style="margin: 15px 0 5px 0; font-size: 16px; color: #555">
+									Ya podés acceder con las siguientes credenciales:
+								</p>
+							</td>
+						</tr>
+
+						<!-- CREDENCIALES DE ACCESO -->
+						<tr>
+							<td style="padding: 5px 20px 10px; text-align: center">
+								<table width="100%" cellpadding="0" cellspacing="0" border="0">
+									<tr>
+										<td align="center" style="padding: 3px 0">
+											<span
+												style="
+													font-size: 16px;
+													font-weight: bold;
+													color: #162d5a;
+												"
+												>Usuario:</span
+											>
+											<span
+												style="font-size: 16px; color: #333"
+												th:text="${email}"
+												>usuario@ejemplo.com</span
+											>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" style="padding: 3px 0">
+											<span
+												style="
+													font-size: 16px;
+													font-weight: bold;
+													color: #162d5a;
+												"
+												>Contraseña temporal:</span
+											>
+											<span
+												style="font-size: 16px; color: #333"
+												th:text="${dni}"
+												>12345678</span
+											>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" style="padding: 15px 0 5px 0">
+											<span
+												style="font-size: 14px; color: #666; font-style: italic"
+											>
+												Por seguridad, te recomendamos cambiar tu contraseña
+												después de iniciar sesión.
+											</span>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+
+						<!-- BOTÓN DE ACCESO -->
+						<tr>
+							<td align="center" style="padding: 20px 20px 30px">
+								<table cellpadding="0" cellspacing="0" border="0">
+									<tr>
+										<td
+											align="center"
+											bgcolor="#28a745"
+											style="border-radius: 5px"
+										>
+											<a
+												href="http://localhost:5173/"
+												style="
+													display: inline-block;
+													padding: 12px 30px;
+													font-size: 16px;
+													color: #ffffff;
+													text-decoration: none;
+													font-weight: bold;
+													border-radius: 5px;
+												"
+												target="_blank"
+											>
+												Ingresar a mi cuenta
+											</a>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+
+						<!-- INFORMACIÓN DE CONTACTO (exactamente igual que el original) -->
+						<tr>
+							<td bgcolor="#162d5a" style="padding: 30px 20px; color: #ffffff">
+								<table width="100%" cellpadding="0" cellspacing="0" border="0">
+									<tr>
+										<td align="center" style="padding: 5px 0">
+											<span
+												style="color: #cccccc; font-size: 14px"
+												th:text="${emailContacto}"
+											>
+												3AImagenamiento@gmail.com
+											</span>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" style="padding: 5px 0">
+											<span
+												style="color: #cccccc; font-size: 14px"
+												th:text="${telefonoContacto}"
+											>
+												223422700
+											</span>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" style="padding: 5px 0">
+											<span
+												style="color: #cccccc; font-size: 14px"
+												th:text="${direccion}"
+											>
+												República de Cuba 60, Mar del Plata
+											</span>
+										</td>
+									</tr>
+									<tr>
+										<td align="center" style="padding: 5px 0">
+											<span
+												style="color: #cccccc; font-size: 14px"
+												th:text="${horarioAtencion}"
+											>
+												Lunes a viernes 10:00 - 14:00
+											</span>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

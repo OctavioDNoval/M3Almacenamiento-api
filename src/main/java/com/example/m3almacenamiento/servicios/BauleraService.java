@@ -206,7 +206,9 @@ public class BauleraService {
         return copy;
     }
 
+    @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse asignarBaulera(Long idBaulera, Long idUsuario){
+        System.out.println("Asignando Baulera "+idBaulera);
         Baulera baulera = bauleraRepositorio.findById(idBaulera)
                 .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
 

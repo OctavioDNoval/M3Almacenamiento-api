@@ -38,6 +38,7 @@ public class UsuarioService {
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
     private final BauleraService bauleraService;
+    private final EmailService emailService;
 
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse crear(UsuarioRequest request){
@@ -55,6 +56,7 @@ public class UsuarioService {
         usuario.setFechaCreacion(new Date());
 
         Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
+        emailService.enviarBienvenida(usuarioGuardado);
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 

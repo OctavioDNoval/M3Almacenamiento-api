@@ -160,6 +160,43 @@ public class EmailService {
         }
     }
 
+    public void enviarBienvenida(Usuario usuario){
+        try{
+        Map<String,Object> variables = new HashMap<>();
+        variables.put("nombre", usuario.getNombreCompleto());
+        variables.put("email", usuario.getEmail());
+        variables.put("dni", usuario.getDni());
+
+        if (contactConfig != null && contactConfig.getContacto() != null) {
+            variables.put("telefonoContacto", contactConfig.getContacto().getTelefono());
+            variables.put("emailContacto", contactConfig.getContacto().getEmail() );
+            variables.put("direccion", contactConfig.getContacto().getDireccion() );
+            variables.put("horarioAtencion", contactConfig.getContacto().getHorario());
+        } else {
+            log.error("Configuración de contacto no disponible");
+            return;
+        }
+
+        try {
+            String logoBase64 = convertirImagenABase64();
+            variables.put("logoBase64", logoBase64);
+        } catch (IOException e) {
+            log.error("Error al convertir imagen a Base64", e);
+            variables.put("logoBase64", ""); // valor por defecto
+        }
+
+        enviarEmailTemplate(
+                usuario.getEmail(),
+                "Bienvenido a M3 Almacenamiento",
+                "EmailBienvenida",
+                variables);
+
+        }catch (Exception e){
+            log.error("❌ Error al enviar el mail ");
+            e.printStackTrace();
+        }
+    }
+
     /*
     * Este metodo se usa para enviar email con un template determinado pasado
     * por parametro
@@ -190,6 +227,8 @@ public class EmailService {
             throw new RuntimeException("Error enviando email", e);
         }
     }
+
+
 
     // ======== Metodos auxiliares =========
 
