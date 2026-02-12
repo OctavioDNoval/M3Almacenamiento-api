@@ -44,7 +44,8 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/baulera/user/**",
-                                "/auth/user/**"
+                                "/auth/user/**",
+                                "/users/user/**"
                         ).hasAnyRole("USER", "ADMIN")
                         .requestMatchers(
                                 "/bauleras/admin/**",

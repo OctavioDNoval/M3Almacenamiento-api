@@ -4,6 +4,7 @@ import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
+import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import com.example.m3almacenamiento.servicios.UsuarioService;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,12 @@ public class UsuarioController {
         return ResponseEntity.ok(paginaResponse);
     }
 
+    @GetMapping("/user/contrasenia-dni")
+    public ResponseEntity<Boolean> verificarContraseniaIgualADni (){
+        Usuario usuario = usuarioService.obtenerUsuarioAutenticado();
+        return ResponseEntity.ok(usuarioService.contraseniaEsDni(usuario));
+    }
+
     /*=======================POST========================*/
 
     @PostMapping("/admin/alta/usuario")
@@ -81,6 +88,12 @@ public class UsuarioController {
     @PatchMapping("/admin/reducirDeuda/{idUsuario}")
     public ResponseEntity<UsuarioResponse> reducirDeuda (@PathVariable Long idUsuario, @RequestParam Integer montoAReducir){
         return ResponseEntity.ok(usuarioService.reducirDeuda(idUsuario,montoAReducir));
+    }
+
+    @PatchMapping("/user/cambiarContrasenia")
+    public ResponseEntity<Boolean> cambiarContrasenia (@RequestBody String newPassword){
+        Usuario usuario = usuarioService.obtenerUsuarioAutenticado();
+        return ResponseEntity.ok(usuarioService.cambiarContrasenia(usuario,newPassword));
     }
 
 }

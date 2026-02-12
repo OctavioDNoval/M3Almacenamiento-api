@@ -18,6 +18,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -110,6 +112,13 @@ public class UsuarioService {
         Usuario usuario = usuarioRepositorio.findById(id)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ id));
         return  usuarioMapper.toResponse(usuario);
+    }
+
+    public Usuario obtenerUsuarioAutenticado(){
+        Authentication auth =  SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return usuarioRepositorio.findByEmail(email)
+                .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
     }
 
     @CacheEvict(value = "dashboard", allEntries = true)
@@ -222,5 +231,19 @@ public class UsuarioService {
                 idUsuario, deudaAcumulada, nuevaDeuda);
 
         return usuarioMapper.toResponse(usuarioActualizado);
+    }
+
+    public Boolean contraseniaEsDni(Usuario usuario){
+        return passwordEncoder.matches(usuario.getDni(), usuario.getPasswordHash());
+    }
+
+    public Boolean cambiarContrasenia(Usuario usuario,String newPassword){
+        try{
+            usuario.setPasswordHash(passwordEncoder.encode(newPassword));
+            Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
     }
 }
