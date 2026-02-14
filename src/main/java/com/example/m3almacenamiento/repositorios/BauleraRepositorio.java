@@ -32,10 +32,12 @@ public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
 
     List<Baulera> findByDiaVencimientoPago(Integer diaVencimientoPago);
 
-    @Query("SELECT b FROM Baulera b WHERE " +
-            "b.nroBaulera LIKE %:search% OR " +
-            "b.usuarioAsignado.nombreCompleto LIKE %:search% OR " +
-            "b.tipoBaulera.tipoBauleraNombre LIKE %:search%")
+    @Query("SELECT b FROM Baulera b " +
+            "LEFT JOIN b.usuarioAsignado u " +
+            "LEFT JOIN b.tipoBaulera t " +
+            "WHERE LOWER(b.nroBaulera) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(u.nombreCompleto) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(t.tipoBauleraNombre) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Baulera> findBySearch(@Param("search") String search, Pageable pageable);
 
 }

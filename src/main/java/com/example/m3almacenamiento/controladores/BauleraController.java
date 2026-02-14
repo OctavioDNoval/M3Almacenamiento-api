@@ -50,6 +50,7 @@ public class BauleraController {
             @RequestParam(defaultValue = "1") Integer pagina,
             @RequestParam(defaultValue = "15") Integer tamanio,
             @RequestParam(defaultValue = "idBaulera") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(defaultValue = "")String filter){
 
         log.info("📥 ENDPOINT LLAMADO - Parámetros recibidos:");
@@ -58,12 +59,12 @@ public class BauleraController {
         log.info("   sortBy: '{}'", sortBy);
         log.info("   search: '{}'", filter);
 
-        PaginacionResponse paginaResponse = new PaginacionResponse();
+        PaginacionResponse paginaResponse;
 
         if(filter == null || filter.trim().isEmpty()){
-            paginaResponse = bauleraService.obtenerTodosPaginados(pagina, tamanio, sortBy);
+            paginaResponse = bauleraService.obtenerTodosPaginados(pagina, tamanio, sortBy, direction);
         }else{
-            paginaResponse = bauleraService.obtenerPaginadoConFiltro(pagina, tamanio, sortBy, filter);
+            paginaResponse = bauleraService.obtenerPaginadoConFiltro(pagina, tamanio, sortBy, filter, direction);
         }
 
         return ResponseEntity.ok(paginaResponse);

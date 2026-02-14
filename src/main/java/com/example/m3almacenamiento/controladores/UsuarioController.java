@@ -35,6 +35,7 @@ public class UsuarioController {
             @RequestParam(defaultValue = "1") Integer pagina,
             @RequestParam(defaultValue = "15") Integer tamanio,
             @RequestParam(defaultValue = "idUsuario") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestParam(defaultValue = "") String filter
     ){
         log.info("📥 ENDPOINT LLAMADO - Parámetros recibidos:");
@@ -46,9 +47,9 @@ public class UsuarioController {
         PaginacionResponse paginaResponse = new PaginacionResponse();
 
         if(filter == null || filter.trim().isEmpty()){
-            paginaResponse = usuarioService.obtenerTodosPaginados(pagina, tamanio, sortBy);
+            paginaResponse = usuarioService.obtenerTodosPaginados(pagina, tamanio, sortBy,direction);
         }else{
-            paginaResponse = usuarioService.obtenerPaginadoConFiltro(pagina, tamanio, sortBy, filter);
+            paginaResponse = usuarioService.obtenerPaginadoConFiltro(pagina, tamanio, sortBy, filter,direction);
         }
 
         return ResponseEntity.ok(paginaResponse);

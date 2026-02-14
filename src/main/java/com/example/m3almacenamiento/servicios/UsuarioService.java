@@ -24,10 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,24 +59,18 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
-    public PaginacionResponse<UsuarioResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy){
-        List<String> casosPermitidos = Arrays.asList("idUsuario", "nombreCompleto", "email", "deudaAcumulada");
-
-        if(!casosPermitidos.contains(sortBy)){
-            sortBy = "idUsuario";
-        }
-
-        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by(sortBy).descending());
-        Page<Usuario> paginaUsuarios = usuarioRepositorio.findAll(pageable);
-
-        return getUsuarioResponsePaginacionResponse(pagina, tamanio, paginaUsuarios);
+    public PaginacionResponse<UsuarioResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy, String direction){
+        Sort sort =  buildSort(sortBy, direction);
+        Pageable pageable =  PageRequest.of(pagina - 1, tamanio, sort );
+        Page<Usuario> page = usuarioRepositorio.findAll(pageable);
+        return getUsuarioResponsePaginacionResponse(pagina,tamanio,page);
     }
 
-    public PaginacionResponse<UsuarioResponse> obtenerPaginadoConFiltro(Integer pagina, Integer tamanio, String sortBy, String filter){
-        Pageable pageable = PageRequest.of(pagina-1, tamanio, Sort.by(sortBy).descending());
-        Page<Usuario> paginaUsuarios = usuarioRepositorio.findBySearch(filter,pageable);
-
-        return getUsuarioResponsePaginacionResponse(pagina, tamanio, paginaUsuarios);
+    public PaginacionResponse<UsuarioResponse> obtenerPaginadoConFiltro(Integer pagina, Integer tamanio, String sortBy, String filter, String direction){
+        Sort sort = buildSort(sortBy, direction);
+        Pageable pageable = PageRequest.of(pagina - 1, tamanio, sort );
+        Page<Usuario> page = usuarioRepositorio.findBySearch(filter, pageable);
+        return getUsuarioResponsePaginacionResponse(pagina,tamanio,page);
     }
 
     private PaginacionResponse<UsuarioResponse> getUsuarioResponsePaginacionResponse(Integer pagina, Integer tamanio, Page<Usuario> paginaUsuarios) {
@@ -97,6 +88,18 @@ public class UsuarioService {
                 .esUltima(paginaUsuarios.isLast())
                 .esPrimera(paginaUsuarios.isFirst())
                 .build();
+    }
+
+    private Sort buildSort(String sortBy, String direction){
+        Map<String,String> mapeoCampos = Map.of(
+                "idUsuario", "idUsuario",
+                "email", "email",
+                "deudaAcumulada", "deudaAcumulada"
+        );
+
+        String campoReal = mapeoCampos.getOrDefault(sortBy, "idUsuario");
+        Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return Sort.by(dir,campoReal);
     }
 
     public List<UsuarioResponse> obtenerTodos(){

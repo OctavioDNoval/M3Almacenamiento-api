@@ -121,36 +121,18 @@ public class BauleraService {
         return bauleraMapper.toResponse(baulera);
     }
 
-    public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy) {
-        Map<String, String> mapeoCampos = new HashMap<>();
-        mapeoCampos.put("idBaulera", "idBaulera");
-        mapeoCampos.put("nroBaulera", "nroBaulera");
-        mapeoCampos.put("tipoBauleraNombre", "tipoBaulera.tipoBauleraNombre"); // ← Mapeo clave
-        mapeoCampos.put("estadoBaulera", "estadoBaulera");
-        mapeoCampos.put("cliente", "usuarioAsignado.nombreCompleto");
-
-        String campoReal = mapeoCampos.getOrDefault(sortBy, "idBaulera");
-        Sort sort = Sort.by(campoReal).descending();
-
-        Pageable pageable = PageRequest.of(pagina-1, tamanio, sort);
-        Page<Baulera> paginaBaulera = bauleraRepositorio.findAll(pageable);
-
-        return getBauleraResponsePaginacionResponse(pagina, tamanio, paginaBaulera);
+    public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy, String direction) {
+        Sort sort =  buildSort(sortBy, direction);
+        Pageable pageable =  PageRequest.of(pagina - 1, tamanio, sort );
+        Page<Baulera> page = bauleraRepositorio.findAll(pageable);
+        return getBauleraResponsePaginacionResponse(pagina,tamanio,page);
     }
 
-    public PaginacionResponse<BauleraResponse> obtenerPaginadoConFiltro (Integer pagina, Integer tamanio, String sortBy, String filter ){
-
-        List<String> casosPermitidos= Arrays.asList("idBaulera", "nroBaulera", "tipoBauleraNombre","nombreUsuario","estadoBaulera");
-
-        if(!casosPermitidos.contains(sortBy)){
-            sortBy = "idUsuario";
-        }
-
-        Pageable pageable = PageRequest.of(pagina -1, tamanio, Sort.by(sortBy).descending());
-        Page<Baulera> paginaBaulera = bauleraRepositorio.findBySearch(filter,pageable);
-
-
-        return getBauleraResponsePaginacionResponse(pagina, tamanio, paginaBaulera);
+    public PaginacionResponse<BauleraResponse> obtenerPaginadoConFiltro (Integer pagina, Integer tamanio, String sortBy, String filter, String direction ) {
+        Sort sort = buildSort(sortBy, direction);
+        Pageable pageable = PageRequest.of(pagina - 1, tamanio, sort );
+        Page<Baulera> page = bauleraRepositorio.findBySearch(filter, pageable);
+        return getBauleraResponsePaginacionResponse(pagina,tamanio,page);
     }
 
     private PaginacionResponse<BauleraResponse> getBauleraResponsePaginacionResponse(Integer pagina, Integer tamanio, Page<Baulera> paginaBaulera) {
@@ -168,6 +150,20 @@ public class BauleraService {
                 .esUltima(paginaBaulera.isLast())
                 .esPrimera(paginaBaulera.isFirst())
                 .build();
+    }
+
+    private Sort buildSort(String sortBy, String direction){
+        Map<String,String> mapeoCampos = Map.of(
+                "idBaulera", "idBaulera",
+                "nroBaulera", "nroBaulera",
+                "tipoBauleraNombre", "tipoBaulera.tipoBauleraNombre",
+                "estadoBaulera", "estadoBaulera",
+                "nombreUsuario", "usuarioAsignado.nombreCompleto"
+        );
+
+        String campoReal = mapeoCampos.getOrDefault(sortBy, "idBaulera");
+        Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return Sort.by(dir,campoReal);
     }
 
     public List<BauleraResponse> obtenerPorIdUsuario(Long idUsuario){
