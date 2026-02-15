@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
@@ -39,6 +40,7 @@ public class UsuarioService {
     private final BauleraService bauleraService;
     private final EmailService emailService;
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse crear(UsuarioRequest request){
         if(usuarioRepositorio.existsByEmail(request.getEmail())){
@@ -152,6 +154,7 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public void eliminar(Long id){
         if(!usuarioRepositorio.existsById(id)){
@@ -166,6 +169,7 @@ public class UsuarioService {
         usuarioRepositorio.deleteById(id);
     }
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse darDeBaja(Long id){
 
@@ -180,6 +184,7 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse darDeAlataUsuarioCreado (Long idUsuario){
         Usuario u = usuarioRepositorio.findById(idUsuario)
@@ -190,6 +195,7 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioGuardado);
     }
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse asignarBauleras(Long usuarioId, List<Long> idBauleras){
         //Metodo que depende de bauleraService
@@ -207,6 +213,7 @@ public class UsuarioService {
         return usuarioMapper.toResponse(usuarioActualizado);
     }
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse reducirDeuda(Long idUsuario, Integer montoAReducir){
         if(montoAReducir == null || montoAReducir <= 0){

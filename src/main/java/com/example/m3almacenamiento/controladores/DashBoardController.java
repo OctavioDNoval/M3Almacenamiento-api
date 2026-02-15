@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.controladores;
 
 import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
+import com.example.m3almacenamiento.modelo.DTO.response.LogResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UserDashBoardResponse;
 import com.example.m3almacenamiento.modelo.entidad.Log;
@@ -23,9 +24,23 @@ public class DashBoardController {
     private final DashBoardService dashBoardService;
 
     @GetMapping("/admin/obtenerLogsPaginados")
-    public ResponseEntity<PaginacionResponse<Log>> obtenerLogsPaginados(Integer pagina, Integer tamanio) {
+    public ResponseEntity<PaginacionResponse<LogResponse>> obtenerLogsPaginados(Integer pagina, Integer tamanio) {
         return ResponseEntity.ok(logService.obtenerLogsPaginados(pagina,tamanio));
+    }
 
+    @GetMapping("/admin/obtenerLogs/insert")
+    public ResponseEntity<List<LogResponse>> obtenerLogsInsert() {
+        return ResponseEntity.ok(logService.obtenerPorAccion("INSERT"));
+    }
+
+    @GetMapping("/admin/obtenerLogs/update")
+    public  ResponseEntity<List<LogResponse>> obtenerLogsUpdate(){
+        return ResponseEntity.ok(logService.obtenerPorAccion("UPDATE"));
+    }
+
+    @GetMapping("/admin/obtenerLogs/delete")
+    public ResponseEntity<List<LogResponse>> obtenerDelete(){
+        return ResponseEntity.ok(logService.obtenerPorAccion("DELETE"));
     }
 
     @GetMapping("/user/obtenerDashBoard/{idUsuario}")

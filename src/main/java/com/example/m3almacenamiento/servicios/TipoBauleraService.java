@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.TipoBauleraMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.TipoBauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.TipoBauleraResponse;
@@ -22,6 +23,7 @@ public class TipoBauleraService {
     private final TipoBauleraMapper tipoBauleraMapper;
     private final GestorBauleraService gestorBauleraService;
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public TipoBauleraResponse crear(TipoBauleraRequest request){
         if(tipoBauleraRepositorio.existsByTipoBauleraNombre(request.getTipoBauleraNombre())){
@@ -48,6 +50,7 @@ public class TipoBauleraService {
         return tipoBauleraMapper.toResponse(tipoBaulera);
     }
 
+    @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
     public boolean eliminarTipoBauleraOnCascade(Long idTipoBaulera){
         if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){

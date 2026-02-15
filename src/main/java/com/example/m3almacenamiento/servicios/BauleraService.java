@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.BauleraMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
@@ -34,6 +35,7 @@ public class BauleraService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final EmailService emailService;
 
+    @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse crear(BauleraRequest bauleraRequest){
@@ -58,6 +60,7 @@ public class BauleraService {
         return bauleraMapper.toResponse(bauleraGuardada);
     }
 
+    @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public List<BauleraResponse> crearDesdeNroBaulera(Integer cantidad, Long tipoBauleraId){
@@ -191,6 +194,7 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
+    @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public boolean eliminar (Long id){
@@ -220,6 +224,7 @@ public class BauleraService {
         return copy;
     }
 
+    @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse asignarBaulera(Long idBaulera, Long idUsuario){
@@ -241,6 +246,7 @@ public class BauleraService {
         return bauleraMapper.toResponse(bauleraGuardada);
     }
 
+    @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     public BauleraResponse desasignarBaulera(Long idBaulera){
         Baulera b = bauleraRepositorio.findById(idBaulera)

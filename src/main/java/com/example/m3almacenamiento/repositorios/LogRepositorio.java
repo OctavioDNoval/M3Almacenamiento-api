@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface LogRepositorio extends JpaRepository<Log,Long>{
-
+    List<Log> findTop15ByAccionOrderByFechaDesc(String accion);
 }
