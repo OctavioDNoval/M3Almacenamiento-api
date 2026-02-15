@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -33,6 +34,7 @@ public class BauleraService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final EmailService emailService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse crear(BauleraRequest bauleraRequest){
         if(bauleraRepositorio.existsByNroBaulera(bauleraRequest.getNroBaulera().trim())){
@@ -56,6 +58,7 @@ public class BauleraService {
         return bauleraMapper.toResponse(bauleraGuardada);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public List<BauleraResponse> crearDesdeNroBaulera(Integer cantidad, Long tipoBauleraId){
         Integer nroMax = bauleraRepositorio.findMaxNroBauleraAsInteger()
@@ -97,6 +100,7 @@ public class BauleraService {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<BauleraResponse> obtenerTodos (){
         List<Baulera>  bauleras = bauleraRepositorio.findAll();
 
@@ -106,6 +110,7 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public List<BauleraResponse> obtenerTodosDisponibles (){
         List<Baulera>  bauleras = bauleraRepositorio.findAllDisponible();
         return bauleras
@@ -114,6 +119,7 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public BauleraResponse obtenerPorId(Long id){
         Baulera baulera = bauleraRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
@@ -121,6 +127,7 @@ public class BauleraService {
         return bauleraMapper.toResponse(baulera);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public PaginacionResponse<BauleraResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy, String direction) {
         Sort sort =  buildSort(sortBy, direction);
         Pageable pageable =  PageRequest.of(pagina - 1, tamanio, sort );
@@ -128,6 +135,7 @@ public class BauleraService {
         return getBauleraResponsePaginacionResponse(pagina,tamanio,page);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public PaginacionResponse<BauleraResponse> obtenerPaginadoConFiltro (Integer pagina, Integer tamanio, String sortBy, String filter, String direction ) {
         Sort sort = buildSort(sortBy, direction);
         Pageable pageable = PageRequest.of(pagina - 1, tamanio, sort );
@@ -152,6 +160,14 @@ public class BauleraService {
                 .build();
     }
 
+    @PreAuthorize("hasRole('SEMIADMIN')")
+    public List<BauleraResponse> obtenerBaulerasSemiAdmin (){
+        List<Baulera> bauleras = bauleraRepositorio.findAllSemiAdmin();
+        return bauleras.stream()
+                .map(bauleraMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     private Sort buildSort(String sortBy, String direction){
         Map<String,String> mapeoCampos = Map.of(
                 "idBaulera", "idBaulera",
@@ -166,6 +182,7 @@ public class BauleraService {
         return Sort.by(dir,campoReal);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @preSecurityService.esMismoUsuario(#idUsuario)")
     public List<BauleraResponse> obtenerPorIdUsuario(Long idUsuario){
         List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);
         return listaBauleras
@@ -174,6 +191,7 @@ public class BauleraService {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public boolean eliminar (Long id){
         if(!bauleraRepositorio.existsById(id)){
@@ -202,6 +220,7 @@ public class BauleraService {
         return copy;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
     public BauleraResponse asignarBaulera(Long idBaulera, Long idUsuario){
         System.out.println("Asignando Baulera "+idBaulera);
@@ -222,6 +241,7 @@ public class BauleraService {
         return bauleraMapper.toResponse(bauleraGuardada);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     public BauleraResponse desasignarBaulera(Long idBaulera){
         Baulera b = bauleraRepositorio.findById(idBaulera)
                 .orElseThrow(()-> new RuntimeException("Baulera no encontrada"));

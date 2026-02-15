@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,7 @@ public class DashBoardService {
     private final BauleraMapper bauleraMapper;
 
     /*===============METODO PARA GENERAR EL DASHBOARD=====================*/
+    @PreAuthorize("hasRole('ADMIN')")
     @Cacheable(value = "dashboard", key = "'dashboardData'", unless = "#result == null")
     public DashBoardResponse obtenerDashBoard() {
         log.info("Generando DashBoard...");
@@ -59,6 +61,7 @@ public class DashBoardService {
                 .build();
     }
 
+    @PreAuthorize("@preSecurityService.esMismoUsuario(#usuarioId)")
     public UserDashBoardResponse obtenerUserDashBoard(Long usuarioId) {
         log.info("Obtendendo Dashboard para el usuario {}", usuarioId);
 

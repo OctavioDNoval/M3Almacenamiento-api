@@ -61,6 +61,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.contraseniaEsDni(usuario));
     }
 
+
     /*=======================POST========================*/
 
     @PostMapping("/admin/alta/usuario")

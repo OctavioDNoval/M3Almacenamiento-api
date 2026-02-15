@@ -52,6 +52,9 @@ public class SecurityConfig {
                                 "/tipo-bauleras/admin/**",
                                 "/users/admin/**"
                         ).hasRole("ADMIN")
+                        .requestMatchers(
+                                "/baulera/semiadmin/**"
+                        ).hasAnyRole("SEMIADMIN", "ADMIN")
                         .anyRequest().authenticated()
                 );
         return http.build();

@@ -71,6 +71,12 @@ public class BauleraController {
 
     }
 
+    @GetMapping("/semiadmin/obtenerTodo")
+    public ResponseEntity<List<BauleraResponse>> obtenerTodoParaSemiAdmin(){
+        List<BauleraResponse> bauleras1a32= bauleraService.obtenerBaulerasSemiAdmin();
+        return ResponseEntity.ok(bauleras1a32);
+    }
+
     //=======================POST======================
     @PostMapping("/admin/new-baulera")
     public ResponseEntity<BauleraResponse> guardar (@RequestBody BauleraRequest bauleraRequest){

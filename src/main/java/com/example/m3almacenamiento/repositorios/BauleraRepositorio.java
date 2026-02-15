@@ -30,7 +30,8 @@ public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
     @Query(value = "select max(cast(b.nroBaulera as integer)) from Baulera b")
     Optional<Integer> findMaxNroBauleraAsInteger();
 
-    List<Baulera> findByDiaVencimientoPago(Integer diaVencimientoPago);
+    @Query(value = "SELECT * FROM baulera WHERE CAST(nro_baulera AS UNSIGNED) BETWEEN 1 AND 32", nativeQuery = true)
+    List<Baulera> findAllSemiAdmin();
 
     @Query("SELECT b FROM Baulera b " +
             "LEFT JOIN b.usuarioAsignado u " +
