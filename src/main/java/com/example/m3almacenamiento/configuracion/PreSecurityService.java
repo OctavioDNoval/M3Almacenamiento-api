@@ -10,6 +10,10 @@ public class PreSecurityService {
 
     private UsuarioRepositorio usuarioRepositorio;
 
+    public PreSecurityService(UsuarioRepositorio usuarioRepositorio) {
+        this.usuarioRepositorio = usuarioRepositorio;
+    }
+
     public Boolean esMismoUsuario(Long idUsuario){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
