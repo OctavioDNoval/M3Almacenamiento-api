@@ -2,10 +2,13 @@ package com.example.m3almacenamiento.servicios.scheduler;
 
 import com.example.m3almacenamiento.modelo.DTO.InfoDeudaEmail;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
+import com.example.m3almacenamiento.modelo.entidad.Remito;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
+import com.example.m3almacenamiento.repositorios.RemitoRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import com.example.m3almacenamiento.servicios.EmailService;
+import com.example.m3almacenamiento.servicios.RemitoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ public class PagosScheduler {
     private final UsuarioRepositorio usuarioRepositorio;
     private final BauleraRepositorio bauleraRepositorio;
     private final EmailService emailService;
+    private final RemitoService remitoService;
 
     /*
      * Se ejecuta todos los meses
@@ -97,6 +101,7 @@ public class PagosScheduler {
 
                 usuarioActualizados++;
                 emailService.enviarNotificacionDeuda(usuario, info);
+                remitoService.generarRemito(usuario, info);
             }catch(Exception e){
                 log.error("Error actualizando deuda de {}: {}", usuario.getNombreCompleto(), e.getMessage());
             }
@@ -104,13 +109,13 @@ public class PagosScheduler {
         log.info("==== Actualización de deudas completada ====");
         log.info("Usuarios actualizados: {}", usuarioActualizados);
 
+
         BigDecimal totalGenerado = infoPorUsuario.values().stream()
                 .map(InfoDeudaEmail::getMontoMensual)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         log.info("Total de deuda generada este mes: {}", totalGenerado);
     }
 
-    // Cambia temporalmente el método para aislar el problema
     @Scheduled(cron = "0 0 6 1 * *")
     public void actualizarDeudasPrueba(){
         log.info("==== PRUEBA DIAGNÓSTICO ====");

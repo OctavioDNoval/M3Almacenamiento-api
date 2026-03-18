@@ -35,9 +35,8 @@ public class Remito {
     @Column(name = "importe_total", precision = 10, scale = 2, nullable = false)
     private BigDecimal importeTotal;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "datos_json", columnDefinition = "json")
-    private String datosJson;
+    @Column(name = "bauleras_string")
+    private String baulerasString;
 
 
 }
