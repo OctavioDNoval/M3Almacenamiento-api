@@ -44,7 +44,7 @@ public class UsuarioController {
         log.info("   sortBy: '{}'", sortBy);
         log.info("   search: '{}'", filter);
 
-        PaginacionResponse paginaResponse = new PaginacionResponse();
+        PaginacionResponse paginaResponse ;
 
         if(filter == null || filter.trim().isEmpty()){
             paginaResponse = usuarioService.obtenerTodosPaginados(pagina, tamanio, sortBy,direction);

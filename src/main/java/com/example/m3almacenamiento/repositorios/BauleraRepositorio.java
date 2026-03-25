@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
     Boolean existsByNroBaulera(String nroBaulera);
     List<Baulera> findByUsuarioAsignado_IdUsuario(Long idUsuario);
-    Boolean existsBynroBaulera(String nroBaulera);
+    Optional<Baulera> findByNroBaulera(String nroBaulera);
 
     @Query(value = "SELECT * FROM baulera b WHERE b.estado_baulera = 'disponible'", nativeQuery = true)
     List<Baulera> findAllDisponible();

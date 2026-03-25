@@ -34,6 +34,12 @@ public class TipoBauleraController {
         return ResponseEntity.ok(tipoBauleraService.crear(tipoBauleraRequest));
     }
 
+    //======================PATCH=====================
+    @PatchMapping("/admin/newPrecio/{idTipoBaulera}")
+    public ResponseEntity<TipoBauleraResponse> newPrecio(@PathVariable Long idTipoBaulera, @RequestParam Double precio){
+        return ResponseEntity.ok(tipoBauleraService.actualizarPrecio(precio,idTipoBaulera));
+    }
+
     //================DELETE=====================
     @DeleteMapping("/admin/delete/{idTipoBaulera}/cascade")
     public ResponseEntity<Void> deleteTipoBauleraCascade(@PathVariable Long idTipoBaulera){

@@ -63,4 +63,15 @@ public class TipoBauleraService {
         return true;
     }
 
+    @SetAuditUser
+    @CacheEvict(value = "dashboard", allEntries = true)
+    public TipoBauleraResponse actualizarPrecio(Double newPrecio, Long idTipoBaulera){
+        TipoBaulera tb = tipoBauleraRepositorio.findById(idTipoBaulera)
+                .orElseThrow(()-> new RuntimeException("Tipo de baulera no encontrado"));
+
+        tb.setPrecioMensual(newPrecio);
+        TipoBaulera bauleraActualizada = tipoBauleraRepositorio.save(tb);
+        return tipoBauleraMapper.toResponse(bauleraActualizada);
+    }
+
 }
