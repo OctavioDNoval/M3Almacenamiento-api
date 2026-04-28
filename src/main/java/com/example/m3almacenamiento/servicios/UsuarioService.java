@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
+import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
@@ -126,33 +127,6 @@ public class UsuarioService {
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
     }
 
-    @CacheEvict(value = "dashboard", allEntries = true)
-    public UsuarioResponse actualizar(UsuarioRequest request, Long id){
-        Usuario usuarioExistente = usuarioRepositorio.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ id));
-
-        if(request.getEmail() != null &&
-            !request.getEmail().equals(usuarioExistente.getEmail()) &&
-                usuarioRepositorio.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Usuario con email ya existe");
-        }
-
-        Usuario usuarioActualizado = usuarioMapper.toEntity(request);
-
-        usuarioActualizado.setIdUsuario(id);
-        usuarioActualizado.setEstado(usuarioExistente.getEstado());
-        usuarioActualizado.setFechaCreacion(usuarioExistente.getFechaCreacion());
-        usuarioActualizado.setBauleras(usuarioExistente.getBauleras());
-
-        if(request.getPassword() != null && !request.getPassword().trim().isEmpty()){
-            usuarioActualizado.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        }else{
-            usuarioActualizado.setPasswordHash(usuarioExistente.getPasswordHash());
-        }
-
-        Usuario usuarioGuardado = usuarioRepositorio.save(usuarioActualizado);
-        return usuarioMapper.toResponse(usuarioGuardado);
-    }
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
@@ -167,6 +141,25 @@ public class UsuarioService {
             return;
         }
         usuarioRepositorio.deleteById(id);
+    }
+
+    @SetAuditUser
+    public UsuarioResponse actualizar (UsuarioRequest u, Long id){
+        Usuario usuario = usuarioRepositorio.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("No se encontro el usuario a actualizar"));
+
+        if(u.getEmail().trim() != "" && !usuarioRepositorio.existsByEmail(u.getEmail())){
+            usuario.setEmail(u.getEmail());
+        }
+        if(u.getTelefono().trim() != ""){
+            usuario.setTelefono(u.getTelefono());
+        }
+        if(u.getNombreCompleto().trim() != ""){
+            usuario.setNombreCompleto(u.getNombreCompleto());
+        }
+
+        Usuario usuarioActualizado = usuarioRepositorio.save(usuario);
+        return usuarioMapper.toResponse(usuarioActualizado);
     }
 
     @SetAuditUser

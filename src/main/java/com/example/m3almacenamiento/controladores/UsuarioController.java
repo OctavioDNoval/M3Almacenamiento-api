@@ -98,4 +98,9 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.cambiarContrasenia(usuario,newPassword));
     }
 
+    @PatchMapping("/admin/actualizarUsuario")
+    public ResponseEntity<UsuarioResponse> actualizarUsuario (UsuarioRequest usuarioRequest, Long idUsuario){
+        return ResponseEntity.ok(usuarioService.actualizar(usuarioRequest, idUsuario));
+    }
+
 }
