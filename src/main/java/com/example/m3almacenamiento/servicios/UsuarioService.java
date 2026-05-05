@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
+import com.example.m3almacenamiento.excepciones.IllegalInputValues;
 import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
@@ -45,11 +46,11 @@ public class UsuarioService {
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse crear(UsuarioRequest request){
         if(usuarioRepositorio.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Usuario con este mail ya existe");
+            throw new IllegalInputValues("Usuario con este mail ya existe");
         }
 
         if(usuarioRepositorio.existsByDni(request.getDni())){
-            throw new RuntimeException("usuario con Dni: "+ request.getDni() +" ya existe");
+            throw new IllegalInputValues("usuario con Dni: "+ request.getDni() +" ya existe");
         }
 
         Usuario usuario = usuarioMapper.toEntity(request);

@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
+import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.BauleraMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.BauleraRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
@@ -101,6 +102,28 @@ public class BauleraService {
                 .map(bauleraMapper::toResponse)
                 .collect(Collectors.toList());
 
+    }
+
+    @SetAuditUser
+    @CacheEvict(value = "dashboard", allEntries = true)
+    public BauleraResponse actualizarBaulera(BauleraRequest request, Long idBaulera){
+        Baulera b = bauleraRepositorio.findById(idBaulera)
+                .orElseThrow(()-> new ResourceNotFoundException("No se encontro la baulera a actualizar"));
+
+        String nroBauleraNuevo = request.getNroBaulera().trim();
+        Long idTipoBaulera = request.getIdTipoBaulera();
+
+        if(!bauleraRepositorio.existsByNroBaulera(nroBauleraNuevo) && !nroBauleraNuevo.isBlank()){
+            b.setNroBaulera(nroBauleraNuevo);
+        }
+        if(idTipoBaulera != null){
+            TipoBaulera tb = tipoBauleraRepositorio.findById(idTipoBaulera)
+                    .orElseThrow(()-> new ResourceNotFoundException("Error al cambiar el tipo de baulera, intente luego"));
+            b.setTipoBaulera(tb);
+        }
+
+        Baulera bauleraActulizada = bauleraRepositorio.save(b);
+        return bauleraMapper.toResponse(bauleraActulizada);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

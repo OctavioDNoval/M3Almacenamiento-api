@@ -6,7 +6,6 @@ import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.servicios.BauleraService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,6 +95,12 @@ public class BauleraController {
     @PatchMapping("/admin/desasignar/{idBaulera}")
     public ResponseEntity<BauleraResponse> desasignar(@PathVariable Long idBaulera){
         return ResponseEntity.ok(bauleraService.desasignarBaulera(idBaulera));
+    }
+
+
+    @PatchMapping("/admin/actualizar/{idBaulera}")
+    public ResponseEntity<BauleraResponse> actualizar (@RequestBody BauleraRequest request, @PathVariable Long idBaulera){
+        return ResponseEntity.ok(bauleraService.actualizarBaulera(request,idBaulera));
     }
 
     @PatchMapping("/admin/asignarBaulera")
