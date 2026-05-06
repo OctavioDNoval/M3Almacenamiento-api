@@ -50,8 +50,7 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     @Email(message = "El email debe tener formato valido")
     private String email;
-
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Teléfono inválido")
+    
     private String telefono;
 
     @Column(nullable = false,name = "password_hash")
