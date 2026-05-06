@@ -103,4 +103,15 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.actualizar(usuarioRequest, idUsuario));
     }
 
+    /*=========================DELETE=======================*/
+
+    @DeleteMapping("/admin/eliminar/{idUsuario}")
+    public ResponseEntity<Void> eliminarUsuario (@PathVariable Long idUsuario){
+        boolean deleted=usuarioService.eliminarUsuario(idUsuario);
+        if(deleted){
+            return ResponseEntity.noContent().build();
+        }else{
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

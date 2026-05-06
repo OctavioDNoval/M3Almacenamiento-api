@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.configuracion.anotaciones.SetAuditUser;
+import com.example.m3almacenamiento.excepciones.IllegalInputValues;
 import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
@@ -10,6 +11,7 @@ import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
+import com.example.m3almacenamiento.repositorios.RemitoRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class UsuarioService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RemitoRepositorio remitoRepositorio;
     private final BauleraService bauleraService;
     private final EmailService emailService;
 
@@ -45,11 +48,11 @@ public class UsuarioService {
     @CacheEvict(value = "dashboard", allEntries = true)
     public UsuarioResponse crear(UsuarioRequest request){
         if(usuarioRepositorio.existsByEmail(request.getEmail())){
-            throw new RuntimeException("Usuario con este mail ya existe");
+            throw new IllegalInputValues("Usuario con este mail ya existe");
         }
 
         if(usuarioRepositorio.existsByDni(request.getDni())){
-            throw new RuntimeException("usuario con Dni: "+ request.getDni() +" ya existe");
+            throw new IllegalInputValues("usuario con Dni: "+ request.getDni() +" ya existe");
         }
 
         Usuario usuario = usuarioMapper.toEntity(request);
@@ -246,6 +249,17 @@ public class UsuarioService {
             Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
             return true;
         }catch(Exception e){
+            return false;
+        }
+    }
+
+    public Boolean eliminarUsuario(Long idUsuario){
+        if(usuarioRepositorio.existsById(idUsuario)){
+            Usuario usuario = usuarioRepositorio.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
+            remitoRepositorio.deleteByUsuario(usuario);
+            usuarioRepositorio.deleteById(idUsuario);
+            return true;
+        }else{
             return false;
         }
     }

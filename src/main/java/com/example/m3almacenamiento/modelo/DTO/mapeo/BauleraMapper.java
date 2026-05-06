@@ -25,6 +25,7 @@ public interface BauleraMapper {
 
     @Mapping(target = "tipoBauleraNombre" , source = "tipoBaulera.tipoBauleraNombre")
     @Mapping(target = "tipoBauleraPrecio" , source = "tipoBaulera.precioMensual")
+    @Mapping(target = "idTipoBaulera", source = "tipoBaulera.idTipoBaulera")
     @Mapping(target = "idUsuario" , source = "usuarioAsignado.idUsuario")
     @Mapping(target = "nombreUsuario", source = "usuarioAsignado.nombreCompleto")
     @Mapping(target = "emailUsuario", source = "usuarioAsignado.email")

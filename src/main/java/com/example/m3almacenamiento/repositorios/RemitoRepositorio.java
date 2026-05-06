@@ -15,4 +15,6 @@ public interface RemitoRepositorio extends JpaRepository<Remito, Long> {
             "LOWER(r.usuario.nombreCompleto) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(r.periodo) LIKE LOWER(CONCAT('%', :search, '%')) ")
     Page<Remito> findBySearch(@Param("search") String search, Pageable pageable);
+
+    void deleteByUsuario(Usuario usuario);
 }
