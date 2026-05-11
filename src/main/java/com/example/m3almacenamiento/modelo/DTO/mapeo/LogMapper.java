@@ -13,6 +13,8 @@ import org.mapstruct.ReportingPolicy;
 public interface LogMapper {
 
     @Mapping(target = "usuario", source = "usuario", qualifiedByName = "usuarioToNombreCompleto")
+    @Mapping(target = "valoresAnteriores", source = "valoresAnteriores")
+    @Mapping(target = "valoresNuevos", source = "valoresNuevos")
     LogResponse toResponse(Log log);
 
     @Named("usuarioToNombreCompleto")

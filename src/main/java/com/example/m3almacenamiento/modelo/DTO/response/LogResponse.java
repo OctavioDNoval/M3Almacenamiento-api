@@ -16,6 +16,8 @@ public class LogResponse {
     private String usuario;
     private String accion;
     private String tablaAfectada;
+    private String valoresAnteriores;
+    private String valoresNuevos;
     private String descripcion;
     private LocalDateTime fecha;
 }
