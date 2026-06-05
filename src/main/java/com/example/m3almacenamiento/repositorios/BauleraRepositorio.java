@@ -11,12 +11,15 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
     Boolean existsByNroBaulera(String nroBaulera);
     List<Baulera> findByUsuarioAsignado_IdUsuario(Long idUsuario);
     Optional<Baulera> findByNroBaulera(String nroBaulera);
+
+    Optional<Baulera> findByIdPublico(UUID idPublico);
 
     @Query(value = "SELECT * FROM baulera b WHERE b.estado_baulera = 'disponible'", nativeQuery = true)
     List<Baulera> findAllDisponible();

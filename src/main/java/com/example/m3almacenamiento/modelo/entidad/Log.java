@@ -25,7 +25,7 @@ public class Log {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_log")
     private Long idLog;
-    
+
     @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
     @Builder.Default
     private UUID idPublico = UUID.randomUUID();

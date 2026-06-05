@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 public interface RemitoRepositorio extends JpaRepository<Remito, Long> {
     @Query("SELECT r FROM Remito r WHERE " +
@@ -17,4 +20,6 @@ public interface RemitoRepositorio extends JpaRepository<Remito, Long> {
     Page<Remito> findBySearch(@Param("search") String search, Pageable pageable);
 
     void deleteByUsuario(Usuario usuario);
+
+    Optional<Remito> findByIdPublico(UUID id);
 }
