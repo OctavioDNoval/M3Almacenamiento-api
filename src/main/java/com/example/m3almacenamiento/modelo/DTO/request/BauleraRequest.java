@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,9 +17,9 @@ import lombok.NoArgsConstructor;
 public class BauleraRequest {
     private String nroBaulera;
 
-    private Long idTipoBaulera;
+    private UUID idTipoBaulera;
 
-    private Long idUsuario;
+    private UUID idUsuario;
 
     @Min(value = 1, message = "El día de vencimiento debe ser entre 1 y 31")
     @Max(value = 31, message = "El día de vencimiento debe ser entre 1 y 31")

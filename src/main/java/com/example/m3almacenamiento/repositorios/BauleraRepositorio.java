@@ -44,4 +44,7 @@ public interface BauleraRepositorio extends JpaRepository<Baulera, Long> {
             "LOWER(t.tipoBauleraNombre) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Baulera> findBySearch(@Param("search") String search, Pageable pageable);
 
+    boolean existsByIdPublico(UUID idPublico);
+
+    List<Baulera> findByUsuarioAsignado_IdPublico(UUID usuarioAsignadoIdPublico);
 }

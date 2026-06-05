@@ -48,14 +48,18 @@ public class BauleraService {
         Baulera baulera = bauleraMapper.toEntity(bauleraRequest);
         baulera.setEstadoBaulera(ESTADO_BAULERA.disponible);
         if(bauleraRequest.getIdUsuario()!=null){
+            Usuario u = usuarioRepositorio.findByIdPublico(bauleraRequest.getIdUsuario()).get();
+            baulera.setUsuarioAsignado(u);
             baulera.setFechaAsignacion(new Date());
             baulera.setEstadoBaulera(ESTADO_BAULERA.ocupada);
         }
 
-        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(bauleraRequest.getIdTipoBaulera())
+        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findByIdPublico(bauleraRequest.getIdTipoBaulera())
                 .orElse(null);
         if(tipoBaulera!=null){
             baulera.setTipoBaulera(tipoBaulera);
+        }else{
+            throw new IllegalInputValues("Tipo Baulera no especificado");
         }
 
         Baulera bauleraGuardada =  bauleraRepositorio.save(baulera);
@@ -65,7 +69,7 @@ public class BauleraService {
     @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
-    public List<BauleraResponse> crearDesdeNroBaulera(Integer cantidad, Long tipoBauleraId){
+    public List<BauleraResponse> crearDesdeNroBaulera(Integer cantidad, UUID tipoBauleraId){
         Integer nroMax = bauleraRepositorio.findMaxNroBauleraAsInteger()
                 .orElse(0);
 
@@ -77,7 +81,9 @@ public class BauleraService {
         }
         TipoBaulera tipoBaulera = null;
         if(tipoBauleraId!=null){
-            tipoBaulera = tipoBauleraRepositorio.findById(tipoBauleraId).orElseThrow();
+            tipoBaulera = tipoBauleraRepositorio.findByIdPublico(tipoBauleraId).orElseThrow(
+                    ()-> new IllegalInputValues("Tipo Baulera no especificado")
+            );
         }
 
         List<Baulera> bauleras = new ArrayList<>();
@@ -106,20 +112,21 @@ public class BauleraService {
     }
 
     @SetAuditUser
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
-    public BauleraResponse actualizarBaulera(BauleraRequest request, Long idBaulera){
-        Baulera b = bauleraRepositorio.findById(idBaulera)
+    public BauleraResponse actualizarBaulera(BauleraRequest request, UUID idBaulera){
+        Baulera b = bauleraRepositorio.findByIdPublico(idBaulera)
                 .orElseThrow(()-> new ResourceNotFoundException("No se encontro la baulera a actualizar"));
 
         String nroBauleraNuevo = request.getNroBaulera().trim();
-        Long idTipoBaulera = request.getIdTipoBaulera();
+        UUID idTipoBaulera = request.getIdTipoBaulera();
 
         if(bauleraRepositorio.existsByNroBaulera(nroBauleraNuevo) && !nroBauleraNuevo.equals(b.getNroBaulera())){
             throw new IllegalInputValues("El numero de baulera ya existe");
         }
         b.setNroBaulera(nroBauleraNuevo);
         if(idTipoBaulera != null){
-            TipoBaulera tb = tipoBauleraRepositorio.findById(idTipoBaulera)
+            TipoBaulera tb = tipoBauleraRepositorio.findByIdPublico(idTipoBaulera)
                     .orElseThrow(()-> new ResourceNotFoundException("Error al cambiar el tipo de baulera, intente luego"));
             b.setTipoBaulera(tb);
         }
@@ -148,8 +155,8 @@ public class BauleraService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public BauleraResponse obtenerPorId(Long id){
-        Baulera baulera = bauleraRepositorio.findById(id)
+    public BauleraResponse obtenerPorId(UUID id){
+        Baulera baulera = bauleraRepositorio.findByIdPublico(id)
                 .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
 
         return bauleraMapper.toResponse(baulera);
@@ -211,8 +218,8 @@ public class BauleraService {
     }
 
     @PreAuthorize("hasRole('ADMIN') or @preSecurityService.esMismoUsuario(#idUsuario)")
-    public List<BauleraResponse> obtenerPorIdUsuario(Long idUsuario){
-        List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);
+    public List<BauleraResponse> obtenerPorIdUsuario(UUID idUsuario){
+        List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdPublico((idUsuario));
         return listaBauleras
                 .stream()
                 .map(bauleraMapper::toResponse)
@@ -222,12 +229,12 @@ public class BauleraService {
     @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
-    public boolean eliminar (Long id){
-        if(!bauleraRepositorio.existsById(id)){
+    public boolean eliminar (UUID id){
+        if(!bauleraRepositorio.existsByIdPublico((id))){
             throw new RuntimeException("Baulera no encontrada");
         }
 
-        Baulera baulera = bauleraRepositorio.findById(id).orElseThrow();
+        Baulera baulera = bauleraRepositorio.findByIdPublico(id).orElseThrow();
         if(baulera.getUsuarioAsignado()!=null){
             baulera.setUsuarioAsignado(null);
         }
@@ -252,12 +259,12 @@ public class BauleraService {
     @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)
-    public BauleraResponse asignarBaulera(Long idBaulera, Long idUsuario){
+    public BauleraResponse asignarBaulera(UUID idBaulera, UUID idUsuario){
         System.out.println("Asignando Baulera "+idBaulera);
-        Baulera baulera = bauleraRepositorio.findById(idBaulera)
+        Baulera baulera = bauleraRepositorio.findByIdPublico(idBaulera)
                 .orElseThrow(() -> new RuntimeException("Baulera no encontrada"));
 
-        Usuario usuario = usuarioRepositorio.findById(idUsuario)
+        Usuario usuario = usuarioRepositorio.findByIdPublico(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         baulera.setUsuarioAsignado(usuario);
@@ -273,8 +280,8 @@ public class BauleraService {
 
     @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
-    public BauleraResponse desasignarBaulera(Long idBaulera){
-        Baulera b = bauleraRepositorio.findById(idBaulera)
+    public BauleraResponse desasignarBaulera(UUID idBaulera){
+        Baulera b = bauleraRepositorio.findByIdPublico(idBaulera)
                 .orElseThrow(()-> new RuntimeException("Baulera no encontrada"));
 
         b.setUsuarioAsignado(null);
