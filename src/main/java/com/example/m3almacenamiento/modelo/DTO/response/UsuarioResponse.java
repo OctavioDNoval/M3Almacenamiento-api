@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +22,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UsuarioResponse {
     @JsonProperty("id")
-    private Long idUsuario;
+    private UUID idUsuario;
 
     private String dni;
     private String nombreCompleto;
@@ -34,6 +35,6 @@ public class UsuarioResponse {
     private BigDecimal deudaAcumulada;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ultimaActualizacionDeuda;
-    private List<Long> idBauleras;
+    private List<UUID> idBauleras;
     private List<String> nroBaulera;
 }
