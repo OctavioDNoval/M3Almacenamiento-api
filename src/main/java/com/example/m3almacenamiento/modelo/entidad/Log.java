@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -24,6 +25,10 @@ public class Log {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_log")
     private Long idLog;
+    
+    @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @Builder.Default
+    private UUID idPublico = UUID.randomUUID();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario")
