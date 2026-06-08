@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 
+import java.sql.Types;
 import java.util.UUID;
 
 @Data
@@ -23,6 +25,7 @@ public class TipoBaulera {
     private Long idTipoBaulera;
 
     @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @JdbcTypeCode(Types.CHAR)
     @Builder.Default
     private UUID idPublico = UUID.randomUUID();
 

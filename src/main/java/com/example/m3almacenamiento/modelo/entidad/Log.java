@@ -5,9 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -27,6 +29,7 @@ public class Log {
     private Long idLog;
 
     @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @JdbcTypeCode(Types.CHAR)
     @Builder.Default
     private UUID idPublico = UUID.randomUUID();
 

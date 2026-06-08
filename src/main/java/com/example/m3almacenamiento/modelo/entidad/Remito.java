@@ -10,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 import tools.jackson.databind.JsonNode;
 
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ public class Remito {
     private Long idRemito;
 
     @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @JdbcTypeCode(Types.CHAR)
     @Builder.Default
     private UUID idPublico = UUID.randomUUID();
 
