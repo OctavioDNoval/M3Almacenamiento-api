@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Remito M3 Almacenamiento</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .receipt-container {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 15px 20px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td, th {
+            vertical-align: top;
+            padding: 4px;
+        }
+        /* Tabla de dos columnas (izquierda/derecha) con ancho fijo */
+        .two-columns {
+            table-layout: fixed;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .two-columns td {
+            width: 50%;
+            vertical-align: top;
+        }
+        .left-col {
+            padding-right: 10px;
+        }
+        .right-col {
+            padding-left: 5px;
+        }
+        .header-table td {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .company-info {
+            text-align: left;
+        }
+        .company-info img {
+            max-width: 200px;
+            margin-bottom: 5px;
+        }
+        .receipt-meta {
+            text-align: right;
+        }
+        .doc-type {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .details-section p {
+            margin: 4px 0;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 2px;
+        }
+        .inner-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .inner-table td, .inner-table th {
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+        }
+        .inner-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        /* Alinear a la derecha la última columna de cada fila en las tablas internas */
+        .inner-table td:last-child {
+            text-align: right;
+            white-space: nowrap;
+        }
+        /* Para filas normales (no de resumen) */
+        .inner-table tr:not(.total-highlight) td:first-child {
+            text-align: left;
+        }
+        .total-highlight {
+            background-color: #e6f2ff;
+            font-weight: bold;
+        }
+        .total-inquilino {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            border-top: 1px solid #ccc;
+            padding-top: 6px;
+            text-align: right;
+        }
+        hr {
+            margin: 10px 0;
+            border: 0;
+            border-top: 1px dashed #aaa;
+        }
+        .text-small {
+            font-size: 10px;
+            color: #666;
+        }
+        .footer {
+            margin-top: 20px;
+        }
+        .signature-space {
+            width: 160px;
+            border-top: 1px solid #333;
+            text-align: center;
+            font-size: 10px;
+            padding-top: 4px;
+            margin-left: auto;
+        }
+        .original-tag {
+            font-size: 10px;
+            font-weight: bold;
+            color: #999;
+        }
+        .bauleras-table {
+            page-break-inside: avoid;
+        }
+        .deuda-box {
+            margin: 10px 0;
+            background: #f9f9f9;
+            padding: 8px;
+            border-left: 3px solid #c00;
+        }
+        /* Asegurar que los números largos no rompan la tabla */
+        .nowrap {
+            white-space: nowrap;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .receipt-container {
+                border: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="receipt-container">
+    <!-- Encabezado: tabla de dos columnas -->
+    <table class="header-table" style="width: 100%;">
+        <tr>
+            <td class="company-info">
+                <img th:if="${not #strings.isEmpty(logoBase64)}" th:src="${logoBase64}" alt="Logo M3" style="width: 200px; margin-bottom: 5px;"/>
+                <h1 th:if="${#strings.isEmpty(logoBase64)}">M3 ALMACENAMIENTO</h1>
+                <p><strong>Bauleras y logística</strong></p>
+                <p>República de Cuba 60, Mar del Plata</p>
+                <p>Tel: 223-422 7000 | www.m3almacenamiento.com.ar</p>
+                <p>Email: m3bauleras@gmail.com</p>
+            </td>
+            <td class="receipt-meta">
+                <div class="doc-type">Remito</div>
+                <p><strong>Nº:</strong> <span th:text="${remito.idRemito}"></span></p>
+                <p><strong>Fecha:</strong> <span th:text="${fechaEmisionStr}"></span></p>
+                <p><strong>Período:</strong> <span th:text="${remito.periodo}"></span></p>
+                <p class="text-small">Original</p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Datos del recibo -->
+    <div class="details-section">
+        <p><strong>Recibí del Sr/a:</strong> <span th:text="${usuario.nombreCompleto}"></span></p>
+        <p><strong>La suma de pesos:</strong> $ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+            (<span th:text="${importeEnLetras}"></span>)</p>
+        <p><strong>En concepto de:</strong> Cobro de alquiler correspondiente al período <strong><span th:text="${remito.periodo}"></span></strong></p>
+        <p><strong>Por la baulera(s):</strong> <span th:text="${#strings.listJoin(numerosBauleras, ', ')}"></span> (MAR DEL PLATA)</p>
+        <p class="text-small" style="border-bottom: none;">Por cuenta y orden de M3 Almacenamiento</p>
+    </div>
+
+    <!-- Tabla de dos columnas: Detalle del Concepto (izquierda) y Resumen de Pago (derecha) -->
+    <table class="two-columns">
+        <tr>
+            <td class="left-col">
+                <table class="inner-table">
+                    <thead>
+                    <tr><th colspan="2">Detalle del Concepto</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Importe alquiler</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td class="right-col">
+                <table class="inner-table">
+                    <thead>
+                    <tr><th colspan="2">Resumen de Pago</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Total a pagar</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></td>
+                    </tr>
+                    <tr>
+                        <td>Pagos Anteriores</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(pagosAnteriores, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                    </tr>
+                    <tr class="total-highlight">
+                        <td><strong>Pagado</strong></td>
+                        <td><strong>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></strong></td>
+                    </tr>
+                    <tr>
+                        <td>Resta</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(resta, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Total Inquilino -->
+    <div class="total-inquilino">
+        Total Inquilino: $ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+    </div>
+
+    <!-- Tabla de bauleras asignadas -->
+    <div th:if="${baulerasDetalle != null and baulerasDetalle.size() > 0}" class="bauleras-table" style="margin-top: 15px;">
+        <hr/>
+        <p><strong>Bauleras Asignadas</strong></p>
+        <table class="inner-table" style="width: 100%;">
+            <thead>
+            <tr><th>N° Baulera</th><th>Tipo</th><th>Precio Mensual</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${baulerasDetalle}">
+                <td th:text="${b.numero}"></td>
+                <td th:text="${b.tipo}"></td>
+                <td style="text-align: right;">$ <span th:text="${#numbers.formatDecimal(b.precio, 1, 'COMMA', 2, 'POINT')}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Deuda acumulada (si existe) -->
+    <div th:if="${deudaAcumulada != null and deudaAcumulada > 0}" class="deuda-box">
+        <p style="margin: 0;"><strong>Resumen de Deuda</strong><br/>
+            Deuda anterior: $ <span th:text="${#numbers.formatDecimal(deudaAnterior, 1, 'COMMA', 2, 'POINT')}"></span><br/>
+            Monto actual: $ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span><br/>
+            <strong>Deuda total: $ <span th:text="${#numbers.formatDecimal(deudaAcumulada, 1, 'COMMA', 2, 'POINT')}"></span></strong>
+        </p>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="text-small" style="margin: 15px 0 8px; border-top: 1px solid #eee; padding-top: 8px;">
+        <strong>Observaciones:</strong> Este documento es un remito interno, no tiene validez fiscal.<br/>
+        Ante cualquier duda, comuníquese con administración.
+    </div>
+
+    <!-- Pie con firma -->
+    <div class="footer">
+        <table style="width: 100%;">
+            <tr>
+                <td style="text-align: left;"><div class="original-tag">[Original]</div></td>
+                <td style="text-align: right;"><div class="signature-space">Firma y aclaración</div></td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
