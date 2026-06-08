@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface TipoBauleraRepositorio extends JpaRepository<TipoBaulera, Long> {
     Boolean existsByTipoBauleraNombre(String nombreTipoBaulera);
     Optional<TipoBaulera> findByIdPublico(UUID id);
+
+    boolean existsByIdPublico(UUID idPublico);
 }

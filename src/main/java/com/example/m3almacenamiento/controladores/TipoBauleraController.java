@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tipo-baulera")
@@ -24,7 +25,7 @@ public class TipoBauleraController {
     }
 
     @GetMapping("/user/obtener-id/{idTipoBaulera}")
-    public ResponseEntity<TipoBauleraResponse> obtenerPorId(@PathVariable Long idTipoBaulera){
+    public ResponseEntity<TipoBauleraResponse> obtenerPorId(@PathVariable UUID idTipoBaulera){
         return ResponseEntity.ok(tipoBauleraService.obtenerPorId(idTipoBaulera));
     }
 
@@ -36,13 +37,13 @@ public class TipoBauleraController {
 
     //======================PATCH=====================
     @PatchMapping("/admin/newPrecio/{idTipoBaulera}")
-    public ResponseEntity<TipoBauleraResponse> newPrecio(@PathVariable Long idTipoBaulera, @RequestParam Double precio){
+    public ResponseEntity<TipoBauleraResponse> newPrecio(@PathVariable UUID idTipoBaulera, @RequestParam Double precio){
         return ResponseEntity.ok(tipoBauleraService.actualizarPrecio(precio,idTipoBaulera));
     }
 
     //================DELETE=====================
     @DeleteMapping("/admin/delete/{idTipoBaulera}/cascade")
-    public ResponseEntity<Void> deleteTipoBauleraCascade(@PathVariable Long idTipoBaulera){
+    public ResponseEntity<Void> deleteTipoBauleraCascade(@PathVariable UUID idTipoBaulera){
         boolean isDeleted = tipoBauleraService.eliminarTipoBauleraOnCascade(idTipoBaulera);
         if(isDeleted){
             return ResponseEntity.noContent().build();
