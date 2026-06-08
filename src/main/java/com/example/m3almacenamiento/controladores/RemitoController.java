@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/remitos")
 @RequiredArgsConstructor
@@ -42,9 +44,9 @@ public class RemitoController {
     }
 
     @GetMapping("/pdf/{idRemito}")
-    public ResponseEntity<byte[]> descargarPdf(@PathVariable Long idRemito) {
+    public ResponseEntity<byte[]> descargarPdf(@PathVariable UUID idRemito) {
         try {
-            Remito remito = remitoRepositorio.findById(idRemito)
+            Remito remito = remitoRepositorio.findByIdPublico(idRemito)
                     .orElseThrow(() -> new RuntimeException("Remito no encontrado con ID: " + idRemito));
 
 

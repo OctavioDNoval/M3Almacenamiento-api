@@ -43,6 +43,7 @@ public class RemitoService {
         Page<Remito> page = remitoRepositorio.findBySearch(filter, pageable);
         return getRemitoResponsePaginacionResponse(pagina,tamanio,page);
     }
+
     private PaginacionResponse<RemitoResponse> getRemitoResponsePaginacionResponse(Integer pagina, Integer tamanio, Page<Remito> paginaRemito) {
         List<RemitoResponse> contenido = paginaRemito.getContent()
                 .stream()
