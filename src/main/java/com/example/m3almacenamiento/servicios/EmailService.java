@@ -246,7 +246,7 @@ public class EmailService {
     }
 
     private String convertirImagenABase64() throws Exception{
-        ClassPathResource resource = new ClassPathResource("/static/img/logo.png");
+        ClassPathResource resource = new ClassPathResource("/static/img/logo_preview.png");
 
         byte[] imageBytes = Files.readAllBytes(Paths.get(resource.getURI()));
         String base64img = Base64.getEncoder().encodeToString(imageBytes);

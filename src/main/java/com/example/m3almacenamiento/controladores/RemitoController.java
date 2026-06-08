@@ -1,5 +1,6 @@
 package com.example.m3almacenamiento.controladores;
 
+import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.RemitoResponse;
 
@@ -14,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/remitos")
@@ -42,43 +45,14 @@ public class RemitoController {
     }
 
     @GetMapping("/pdf/{idRemito}")
-    public ResponseEntity<byte[]> descargarPdf(@PathVariable Long idRemito) {
-        try {
-            Remito remito = remitoRepositorio.findById(idRemito)
-                    .orElseThrow(() -> new RuntimeException("Remito no encontrado con ID: " + idRemito));
+    public ResponseEntity<byte[]> descargarPdfRemito(@PathVariable UUID idRemito) throws Exception {
+        Remito remito = remitoRepositorio.findByIdPublico(idRemito).orElseThrow(()-> new ResourceNotFoundException("Remito No encontrado")); // tu servicio
+        byte[] pdf = pdfGeneratorService.generarRemitoPdfConTemplate(remito);
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "remito_" + remito.getIdRemito() + ".pdf");
 
-
-            byte[] pdfBytes = pdfGeneratorService.generarRemitoPdf(remito);
-
-            // 3. Crear nombre del archivo
-            String nombreArchivo = String.format("remito_%s_%s.pdf",
-                    remito.getUsuario().getNombreCompleto()
-                            .toLowerCase()
-                            .replace(" ", "_")
-                            .replace("ñ", "n"),
-                    remito.getPeriodo()
-                            .toLowerCase()
-                            .replace(" ", "_")
-                            .replace("ñ", "n")
-            );
-
-            // 4. Configurar headers para la descarga
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", nombreArchivo);
-            headers.setContentLength(pdfBytes.length);
-
-
-
-            // 5. Devolver el PDF como respuesta
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-
-        } catch (Exception e) {
-            log.error("Error al generar el PDF para remito ID: {}", idRemito, e);
-            return ResponseEntity.internalServerError().build();
-        }
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 }

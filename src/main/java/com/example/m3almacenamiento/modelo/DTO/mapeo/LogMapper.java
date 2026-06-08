@@ -15,6 +15,7 @@ public interface LogMapper {
     @Mapping(target = "usuario", source = "usuario", qualifiedByName = "usuarioToNombreCompleto")
     @Mapping(target = "valoresAnteriores", source = "valoresAnteriores")
     @Mapping(target = "valoresNuevos", source = "valoresNuevos")
+    @Mapping(target = "idLog", source = "idPublico")
     LogResponse toResponse(Log log);
 
     @Named("usuarioToNombreCompleto")

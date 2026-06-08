@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/logs")
@@ -44,7 +45,7 @@ public class DashBoardController {
     }
 
     @GetMapping("/user/obtenerDashBoard/{idUsuario}")
-    public ResponseEntity<UserDashBoardResponse> obtenerUserDashBoard(@PathVariable Long idUsuario) {
+    public ResponseEntity<UserDashBoardResponse> obtenerUserDashBoard(@PathVariable UUID idUsuario) {
         return ResponseEntity.ok(dashBoardService.obtenerUserDashBoard(idUsuario));
     }
 

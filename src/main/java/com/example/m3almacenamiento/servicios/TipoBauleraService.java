@@ -13,6 +13,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,29 +45,29 @@ public class TipoBauleraService {
                 .collect(Collectors.toList());
     }
 
-    public TipoBauleraResponse obtenerPorId(Long id){
-        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(id)
+    public TipoBauleraResponse obtenerPorId(UUID id){
+        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findByIdPublico(id)
                 .orElseThrow(()-> new RuntimeException("Tipo de baulera no encontrado"));
         return tipoBauleraMapper.toResponse(tipoBaulera);
     }
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public boolean eliminarTipoBauleraOnCascade(Long idTipoBaulera){
-        if(!tipoBauleraRepositorio.existsById(idTipoBaulera)){
+    public boolean eliminarTipoBauleraOnCascade(UUID idTipoBaulera){
+        if(!tipoBauleraRepositorio.existsByIdPublico(idTipoBaulera)){
             throw new RuntimeException("Tipo de baulera no encontrado");
         }
 
-        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findById(idTipoBaulera).orElseThrow();
-        gestorBauleraService.eliminarPorTipoBaulera(idTipoBaulera);
-        tipoBauleraRepositorio.deleteById(idTipoBaulera);
+        TipoBaulera tipoBaulera = tipoBauleraRepositorio.findByIdPublico(idTipoBaulera).orElseThrow();
+        gestorBauleraService.eliminarPorTipoBaulera(tipoBaulera.getIdTipoBaulera());
+        tipoBauleraRepositorio.deleteById(tipoBaulera.getIdTipoBaulera());
         return true;
     }
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public TipoBauleraResponse actualizarPrecio(Double newPrecio, Long idTipoBaulera){
-        TipoBaulera tb = tipoBauleraRepositorio.findById(idTipoBaulera)
+    public TipoBauleraResponse actualizarPrecio(Double newPrecio, UUID idTipoBaulera){
+        TipoBaulera tb = tipoBauleraRepositorio.findByIdPublico(idTipoBaulera)
                 .orElseThrow(()-> new RuntimeException("Tipo de baulera no encontrado"));
 
         tb.setPrecioMensual(newPrecio);

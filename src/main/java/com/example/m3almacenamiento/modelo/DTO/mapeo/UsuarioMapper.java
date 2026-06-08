@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring",
@@ -34,7 +35,7 @@ public interface UsuarioMapper {
 
     //==========Conversion para leer (Entity -> Response)==============
 
-    @Mapping(target = "idUsuario", source = "idUsuario")
+    @Mapping(target = "idUsuario", source = "idPublico")
     @Mapping(target = "fechaCreacion", source = "fechaCreacion", qualifiedByName = "dateToLocalDateTime")
     @Mapping(target = "idBauleras", source = "bauleras", qualifiedByName = "extractBauleraIds")
     @Mapping(target = "nroBaulera", source = "bauleras", qualifiedByName = "extractBauleraNro")
@@ -63,13 +64,13 @@ public interface UsuarioMapper {
     }
 
     @Named("extractBauleraIds")
-    default List<Long> extractBauleraId(java.util.List<Baulera> bauleras) {
+    default List<UUID> extractBauleraId(java.util.List<Baulera> bauleras) {
         if(bauleras == null || bauleras.isEmpty()) return null;
 
         return bauleras
                 .stream()
                 .filter(b -> "ocupada".equals(b.getEstadoBaulera().name()))
-                .map(Baulera::getIdBaulera)
+                .map(Baulera::getIdPublico)
                 .collect(Collectors.toList());
     }
 

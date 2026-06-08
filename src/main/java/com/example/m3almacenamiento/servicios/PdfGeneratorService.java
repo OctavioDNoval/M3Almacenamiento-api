@@ -1,29 +1,22 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.configuracion.ContactConfig;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Remito;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,218 +25,170 @@ import java.util.stream.Collectors;
 public class PdfGeneratorService {
 
     private final BauleraRepositorio bauleraRepository;
+    private final TemplateEngine templateEngine;
+    private final ContactConfig contactConfig;
 
+    public byte[] generarRemitoPdfConTemplate(Remito remito) throws Exception {
+        Context context = new Context();
 
-    public byte[] generarRemitoPdf(Remito remito) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        context.setVariable("remito", remito);
+        Usuario usuario = remito.getUsuario();
+        context.setVariable("usuario", usuario);
 
-        try {
-            // Crear documento PDF
-            PdfWriter writer = new PdfWriter(outputStream);
-            PdfDocument pdfDoc = new PdfDocument(writer);
-            Document document = new Document(pdfDoc);
+        List<String> numerosBauleras = obtenerNumerosBauleras(remito.getBaulerasString());
+        context.setVariable("numerosBauleras", numerosBauleras);
 
-            // Configurar fuente
-            PdfFont font = PdfFontFactory.createFont();
-
-            // ========== ENCABEZADO ==========
-            Paragraph header = new Paragraph("REMITO DE BAULERAS")
-                    .setFont(font)
-                    .setFontSize(20)
-                    .setBold()
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(20);
-            document.add(header);
-
-            // Línea separadora
-            document.add(new Paragraph("______________________________________________")
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(" "));
-
-            // ========== DATOS DEL REMITO ==========
-            document.add(new Paragraph("DATOS DEL REMITO")
-                    .setFont(font)
-                    .setFontSize(14)
-                    .setBold()
-                    .setMarginBottom(10));
-
-            document.add(new Paragraph("N° Remito: " + remito.getIdRemito())
-                    .setFont(font)
-                    .setFontSize(11));
-            document.add(new Paragraph("Período: " + remito.getPeriodo())
-                    .setFont(font)
-                    .setFontSize(11));
-            document.add(new Paragraph("Fecha de Emisión: " +
-                    remito.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-                    .setFont(font)
-                    .setFontSize(11));
-
-            document.add(new Paragraph(" "));
-
-            // ========== DATOS DEL CLIENTE ==========
-            Usuario usuario = remito.getUsuario();
-            document.add(new Paragraph("DATOS DEL CLIENTE")
-                    .setFont(font)
-                    .setFontSize(14)
-                    .setBold()
-                    .setMarginBottom(10));
-
-            document.add(new Paragraph("Nombre: " + usuario.getNombreCompleto())
-                    .setFont(font)
-                    .setFontSize(11));
-            document.add(new Paragraph("DNI: " + usuario.getDni())
-                    .setFont(font)
-                    .setFontSize(11));
-            document.add(new Paragraph("Email: " + usuario.getEmail())
-                    .setFont(font)
-                    .setFontSize(11));
-            if (usuario.getTelefono() != null && !usuario.getTelefono().isEmpty()) {
-                document.add(new Paragraph("Teléfono: " + usuario.getTelefono())
-                        .setFont(font)
-                        .setFontSize(11));
-            }
-
-            document.add(new Paragraph(" "));
-
-            // ========== TABLA DE BAULERAS ==========
-            document.add(new Paragraph("DETALLE DE BAULERAS")
-                    .setFont(font)
-                    .setFontSize(14)
-                    .setBold()
-                    .setMarginBottom(10));
-
-            // Obtener lista de números de bauleras desde baulerasString
-            List<String> numerosBauleras = obtenerNumerosBauleras(remito.getBaulerasString());
-
-            if (!numerosBauleras.isEmpty()) {
-                // Crear tabla con 4 columnas
-                Table table = new Table(UnitValue.createPercentArray(new float[]{30, 30, 20}))
-                        .useAllAvailableWidth();
-
-                // Encabezados de la tabla
-                table.addCell(new Cell().add(new Paragraph("N° BAUELRA").setFont(font).setBold()));
-                table.addCell(new Cell().add(new Paragraph("TIPO").setFont(font).setBold()));
-                table.addCell(new Cell().add(new Paragraph("PRECIO").setFont(font).setBold()));
-
-                BigDecimal totalDetallado = BigDecimal.ZERO;
-
-                // Buscar cada baulera por su número y agregar a la tabla
-                for (String nroBaulera : numerosBauleras) {
-                    // Buscar la baulera por su número
-                    Baulera baulera = bauleraRepository.findByNroBaulera(nroBaulera)
-                            .orElse(null);
-
-                    String tipo = "-";
-
-                    BigDecimal precio = BigDecimal.ZERO;
-
-                    if (baulera != null && baulera.getTipoBaulera() != null) {
-                        tipo = baulera.getTipoBaulera().getTipoBauleraNombre();
-                        precio = BigDecimal.valueOf(baulera.getTipoBaulera().getPrecioMensual());
-                    }
-
-                    table.addCell(new Cell().add(new Paragraph(nroBaulera).setFont(font)));
-                    table.addCell(new Cell().add(new Paragraph(tipo).setFont(font)));
-                    table.addCell(new Cell().add(new Paragraph("$ " + precio.toString()).setFont(font)));
-
-                    totalDetallado = totalDetallado.add(precio);
+        // Detalle de bauleras
+        List<Map<String, Object>> baulerasDetalle = new ArrayList<>();
+        for (String nro : numerosBauleras) {
+            Optional<Baulera> opt = bauleraRepository.findByNroBaulera(nro);
+            String tipo = "-";
+            BigDecimal precio = BigDecimal.ZERO;
+            if (opt.isPresent()) {
+                Baulera b = opt.get();
+                if (b.getTipoBaulera() != null) {
+                    tipo = b.getTipoBaulera().getTipoBauleraNombre();
+                    precio = BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual());
                 }
-
-                document.add(table);
-
-                // Mostrar total detallado si difiere del importe total
-                if (totalDetallado.compareTo(remito.getImporteTotal()) != 0) {
-                    document.add(new Paragraph(" ")
-                            .setMarginTop(5));
-                    document.add(new Paragraph("Total parcial: $ " + totalDetallado.toString())
-                            .setFont(font)
-                            .setFontSize(10)
-                            .setTextAlignment(TextAlignment.RIGHT));
-                }
-
-            } else {
-                document.add(new Paragraph("No se encontraron bauleras para este remito")
-                        .setFont(font)
-                        .setFontSize(11));
             }
+            Map<String, Object> item = new HashMap<>();
+            item.put("numero", nro);
+            item.put("tipo", tipo);
+            item.put("precio", precio);
+            baulerasDetalle.add(item);
+        }
+        BigDecimal precioXMes = (BigDecimal) baulerasDetalle.get(0).get("precio");
+        context.setVariable("baulerasDetalle", baulerasDetalle);
+        context.setVariable("precioBauleraMes", precioXMes);
+        // Deuda
+        BigDecimal deudaAcumulada = usuario.getDeudaAcumulada();
+        BigDecimal deudaAnterior = BigDecimal.ZERO;
+        if (deudaAcumulada != null && remito.getImporteTotal() != null) {
+            deudaAnterior = deudaAcumulada.subtract(remito.getImporteTotal());
+            if (deudaAnterior.compareTo(BigDecimal.ZERO) < 0) deudaAnterior = BigDecimal.ZERO;
+        }
+        context.setVariable("deudaAcumulada", deudaAcumulada);
+        context.setVariable("deudaAnterior", deudaAnterior);
 
-            document.add(new Paragraph(" "));
-
-            // ========== TOTAL ==========
-            Paragraph total = new Paragraph("TOTAL: $ " + remito.getImporteTotal().toString())
-                    .setFont(font)
-                    .setFontSize(16)
-                    .setBold()
-                    .setTextAlignment(TextAlignment.RIGHT)
-                    .setMarginTop(20);
-            document.add(total);
-
-            document.add(new Paragraph(" "));
-
-            // ========== RESUMEN DE DEUDA ==========
-            if (usuario.getDeudaAcumulada() != null && usuario.getDeudaAcumulada().compareTo(BigDecimal.ZERO) > 0) {
-                document.add(new Paragraph("RESUMEN DE DEUDA")
-                        .setFont(font)
-                        .setFontSize(12)
-                        .setBold()
-                        .setMarginBottom(5));
-
-                document.add(new Paragraph("Deuda acumulada al período anterior: $ " +
-                        usuario.getDeudaAcumulada().subtract(remito.getImporteTotal()).toString())
-                        .setFont(font)
-                        .setFontSize(10));
-                document.add(new Paragraph("Monto del presente período: $ " + remito.getImporteTotal().toString())
-                        .setFont(font)
-                        .setFontSize(10));
-                document.add(new Paragraph("Deuda total actualizada: $ " + usuario.getDeudaAcumulada().toString())
-                        .setFont(font)
-                        .setFontSize(10)
-                        .setBold());
-
-                document.add(new Paragraph(" "));
-            }
-
-            // ========== OBSERVACIONES ==========
-            document.add(new Paragraph("OBSERVACIONES")
-                    .setFont(font)
-                    .setFontSize(12)
-                    .setBold()
-                    .setMarginBottom(5));
-
-            document.add(new Paragraph("Este documento es un remito interno, no tiene validez fiscal.")
-                    .setFont(font)
-                    .setFontSize(10));
-
-            document.add(new Paragraph("Ante cualquier duda, comuníquese con administración.")
-                    .setFont(font)
-                    .setFontSize(10));
-
-            document.add(new Paragraph(" "));
-            document.add(new Paragraph(" "));
-
-            // ========== FIRMA ==========
-
-
-            // Cerrar documento
-            document.close();
-
-            log.info("PDF generado exitosamente para remito ID: {}", remito.getIdRemito());
-
-        } catch (Exception e) {
-            log.error("Error generando PDF", e);
-            throw new IOException("Error generando PDF", e);
+        // Contacto
+        if (contactConfig != null && contactConfig.getContacto() != null) {
+            context.setVariable("contacto", contactConfig.getContacto());
+        } else {
+            Map<String, String> fallback = new HashMap<>();
+            fallback.put("telefono", "N/A");
+            fallback.put("email", "N/A");
+            context.setVariable("contacto", fallback);
         }
 
-        return outputStream.toByteArray();
+        // Logo
+        try {
+            String logoBase64 = convertirImagenABase64();
+            context.setVariable("logoBase64", logoBase64);
+        } catch (Exception e) {
+            log.warn("No se pudo cargar el logo: {}", e.getMessage());
+            context.setVariable("logoBase64", "");
+        }
+
+        // 🔥 NUEVO: Importe en letras
+        String importeEnLetras = convertirNumeroALetras(precioXMes);
+        context.setVariable("importeEnLetras", importeEnLetras);
+
+        BigDecimal deuda = remito.getDeudaAnterior();
+        context.setVariable("deudaAnterior", deuda);
+
+        String fechaFormateada = remito.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        context.setVariable("fechaEmisionStr", fechaFormateada);
+
+        String html = templateEngine.process("RemitoTemplate", context);
+        return convertirHtmlAPdf(html);
     }
 
+    // -------------------------------------------------------------
+    // Conversión de número a letras (español, hasta millones)
+    // -------------------------------------------------------------
+    private String convertirNumeroALetras(BigDecimal monto) {
+        if (monto == null) return "CERO";
+        long parteEntera = monto.longValue();
+        int centavos = monto.remainder(BigDecimal.ONE).movePointRight(2).intValue();
+        String letras = convertirEntero(parteEntera);
+        letras = letras + " CON " + String.format("%02d", centavos) + "/100";
+        return letras;
+    }
 
-    private List<String> obtenerNumerosBauleras(String baulerasString) {
-        if (baulerasString == null || baulerasString.trim().isEmpty()) {
-            return List.of();
+    private String convertirEntero(long numero) {
+        if (numero == 0) return "CERO";
+        if (numero == 1000000) return "UN MILLON";
+        if (numero > 999999) return "NO SOPORTADO";
+
+        String[] unidades = {"", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"};
+        String[] decenas = {"", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"};
+        String[] especiales = {"ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISEIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"};
+
+        StringBuilder resultado = new StringBuilder();
+
+        int miles = (int) (numero / 1000);
+        int resto = (int) (numero % 1000);
+
+        if (miles > 0) {
+            if (miles == 1) resultado.append("MIL ");
+            else resultado.append(convertirEntero(miles)).append(" MIL ");
         }
 
-        // Separar por coma y limpiar espacios
+        int centenas = resto / 100;
+        int decenaUnidad = resto % 100;
+
+        if (centenas > 0) {
+            switch (centenas) {
+                case 1: resultado.append("CIEN "); break;
+                case 2: resultado.append("DOSCIENTOS "); break;
+                case 3: resultado.append("TRESCIENTOS "); break;
+                case 4: resultado.append("CUATROCIENTOS "); break;
+                case 5: resultado.append("QUINIENTOS "); break;
+                case 6: resultado.append("SEISCIENTOS "); break;
+                case 7: resultado.append("SETECIENTOS "); break;
+                case 8: resultado.append("OCHOCIENTOS "); break;
+                case 9: resultado.append("NOVECIENTOS "); break;
+            }
+        }
+
+        if (decenaUnidad > 0) {
+            if (decenaUnidad < 10) {
+                resultado.append(unidades[decenaUnidad]);
+            } else if (decenaUnidad <= 19) {
+                resultado.append(especiales[decenaUnidad - 11]);
+            } else {
+                int dec = decenaUnidad / 10;
+                int uni = decenaUnidad % 10;
+                if (uni == 0) resultado.append(decenas[dec]);
+                else resultado.append(decenas[dec]).append(" Y ").append(unidades[uni]);
+            }
+        }
+
+        return resultado.toString().trim();
+    }
+
+    // -------------------------------------------------------------
+    // Métodos auxiliares (sin cambios)
+    // -------------------------------------------------------------
+    private byte[] convertirHtmlAPdf(String html) throws Exception {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(html);
+            renderer.layout();
+            renderer.createPDF(out);
+            return out.toByteArray();
+        }
+    }
+
+    private String convertirImagenABase64() throws Exception {
+        ClassPathResource resource = new ClassPathResource("/static/img/logo.png");
+        byte[] imageBytes = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(resource.getURI()));
+        String base64 = Base64.getEncoder().encodeToString(imageBytes);
+        return "data:image/png;base64," + base64;
+    }
+
+    private List<String> obtenerNumerosBauleras(String baulerasString) {
+        if (baulerasString == null || baulerasString.trim().isEmpty()) return List.of();
         return Arrays.stream(baulerasString.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())

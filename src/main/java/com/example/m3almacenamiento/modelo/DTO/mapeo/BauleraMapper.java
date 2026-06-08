@@ -16,29 +16,22 @@ public interface BauleraMapper {
 
     @Mapping(target = "idBaulera", ignore = true)
     @Mapping(target = "estadoBaulera", ignore = true)
-    @Mapping(target = "usuarioAsignado", source = "idUsuario", qualifiedByName = "idToUsuario")
+    @Mapping(target = "idPublico", ignore = true)
+    @Mapping(target = "usuarioAsignado", ignore = true)
     @Mapping(target = "fechaAsignacion", ignore = true)
-    @Mapping(target = "tipoBaulera", source = "idTipoBaulera", qualifiedByName = "idToTipoBaulera")
+    @Mapping(target = "tipoBaulera", ignore = true)
     Baulera toEntity(BauleraRequest bauleraRequest);
 
     //============Conversion para leer (Entity -> Response)
 
     @Mapping(target = "tipoBauleraNombre" , source = "tipoBaulera.tipoBauleraNombre")
     @Mapping(target = "tipoBauleraPrecio" , source = "tipoBaulera.precioMensual")
-    @Mapping(target = "idTipoBaulera", source = "tipoBaulera.idTipoBaulera")
-    @Mapping(target = "idUsuario" , source = "usuarioAsignado.idUsuario")
+    @Mapping(target = "idTipoBaulera", source = "tipoBaulera.idPublico")
+    @Mapping(target = "idUsuario" , source = "usuarioAsignado.idPublico")
     @Mapping(target = "nombreUsuario", source = "usuarioAsignado.nombreCompleto")
     @Mapping(target = "emailUsuario", source = "usuarioAsignado.email")
+    @Mapping(target = "idBaulera", source = "idPublico")
     BauleraResponse  toResponse(Baulera baulera);
-
-    //============Conversion para actualizar ================
-
-    @Mapping(target = "idBaulera", ignore = true)
-    @Mapping(target = "estadoBaulera", ignore = true)
-    @Mapping(target = "usuarioAsignado", ignore = true)
-    @Mapping(target = "fechaAsignacion", ignore = true)
-    @Mapping(target = "tipoBaulera", source = "idTipoBaulera", qualifiedByName = "idToTipoBaulera")
-    void updateFromRequest (BauleraRequest request, @MappingTarget Baulera baulera);
 
     //============Metodos auxiliares===============
 

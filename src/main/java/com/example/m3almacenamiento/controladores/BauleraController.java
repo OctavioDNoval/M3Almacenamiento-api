@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/baulera")
@@ -33,13 +34,13 @@ public class BauleraController {
     }
 
     @GetMapping("/user/obtener-x-id/{idBaulera}")
-    public ResponseEntity<BauleraResponse> obtenerPorId(@PathVariable Long idBaulera){
+    public ResponseEntity<BauleraResponse> obtenerPorId(@PathVariable UUID idBaulera){
         BauleraResponse bauleraPorId = bauleraService.obtenerPorId(idBaulera);
         return ResponseEntity.ok(bauleraPorId);
     }
 
     @GetMapping("/user/obtenerTodo/{idUsuario}")
-    public ResponseEntity<List<BauleraResponse>> obtenerTodoPorUsuario(@PathVariable Long idUsuario){
+    public ResponseEntity<List<BauleraResponse>> obtenerTodoPorUsuario(@PathVariable UUID idUsuario){
         List<BauleraResponse> listaBauleras = bauleraService.obtenerPorIdUsuario(idUsuario);
         return ResponseEntity.ok(listaBauleras);
     }
@@ -86,31 +87,31 @@ public class BauleraController {
     @PostMapping("/admin/crear-lote")
     public ResponseEntity<List<BauleraResponse>> guardarEnLote (
             @RequestParam Integer cantidad,
-            @RequestParam Long tipoBauleraId
+            @RequestParam UUID tipoBauleraId
     ){
         return ResponseEntity.ok(bauleraService.crearDesdeNroBaulera(cantidad, tipoBauleraId));
     }
 
     //=======================PATCH==========================
     @PatchMapping("/admin/desasignar/{idBaulera}")
-    public ResponseEntity<BauleraResponse> desasignar(@PathVariable Long idBaulera){
+    public ResponseEntity<BauleraResponse> desasignar(@PathVariable UUID idBaulera){
         return ResponseEntity.ok(bauleraService.desasignarBaulera(idBaulera));
     }
 
 
     @PatchMapping("/admin/actualizar/{idBaulera}")
-    public ResponseEntity<BauleraResponse> actualizar (@RequestBody BauleraRequest request, @PathVariable Long idBaulera){
+    public ResponseEntity<BauleraResponse> actualizar (@RequestBody BauleraRequest request, @PathVariable UUID idBaulera){
         return ResponseEntity.ok(bauleraService.actualizarBaulera(request,idBaulera));
     }
 
     @PatchMapping("/admin/asignarBaulera")
-    public ResponseEntity<BauleraResponse> asignarBaulera(@RequestParam Long idBaulera, @RequestParam Long idUsuario){
+    public ResponseEntity<BauleraResponse> asignarBaulera(@RequestParam UUID idBaulera, @RequestParam UUID idUsuario){
         return ResponseEntity.ok(bauleraService.asignarBaulera(idBaulera, idUsuario));
     }
 
     //====================DELETE==========================
     @DeleteMapping("/admin/eliminar/{idBaulera}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long idBaulera){
+    public ResponseEntity<Void> eliminar(@PathVariable UUID idBaulera){
         boolean isDeleted= bauleraService.eliminar(idBaulera);
         if(isDeleted){
             return ResponseEntity.noContent().build();

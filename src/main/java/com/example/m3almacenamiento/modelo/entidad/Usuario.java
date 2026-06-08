@@ -9,13 +9,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -38,6 +41,11 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Long idUsuario;
+
+    @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @JdbcTypeCode(Types.CHAR)
+    @Builder.Default
+    private UUID idPublico = UUID.randomUUID();
 
     @Column(nullable = false, unique = true, length = 20)
     @NotBlank
@@ -81,5 +89,6 @@ public class Usuario {
     private Date ultimaActualizacionDeuda;
 
     @OneToMany(mappedBy = "usuarioAsignado", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Baulera> bauleras = new ArrayList<>();
 }

@@ -5,6 +5,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component("preSecurityService")
 public class PreSecurityService {
 
@@ -14,12 +16,12 @@ public class PreSecurityService {
         this.usuarioRepositorio = usuarioRepositorio;
     }
 
-    public Boolean esMismoUsuario(Long idUsuario){
+    public Boolean esMismoUsuario(UUID idUsuario){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
 
         return usuarioRepositorio.findByEmail(email)
-                .map(u -> u.getIdUsuario().equals(idUsuario))
+                .map(u -> u.getIdPublico().equals(idUsuario))
                 .orElse(false);
     }
 }

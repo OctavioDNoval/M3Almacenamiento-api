@@ -117,8 +117,8 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    public UsuarioResponse obtenerPorId(Long id){
-        Usuario usuario = usuarioRepositorio.findById(id)
+    public UsuarioResponse obtenerPorId(UUID id){
+        Usuario usuario = usuarioRepositorio.findByIdPublico(id)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ id));
         return  usuarioMapper.toResponse(usuario);
     }
@@ -133,22 +133,22 @@ public class UsuarioService {
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public void eliminar(Long id){
-        if(!usuarioRepositorio.existsById(id)){
+    public void eliminar(UUID id){
+        if(!usuarioRepositorio.existsByIdPublico(id)){
             throw new RuntimeException("Usuario no encontrado con ID: "+ id);
         }
 
-        Usuario usuario = usuarioRepositorio.findById(id).orElseThrow();
-        if (usuario.getBauleras() != null && !usuario.getBauleras().isEmpty()) {
-            //Setear a esas bauleras el usuario en null
-            return;
+        Usuario usuario = usuarioRepositorio.findByIdPublico(id).orElseThrow();
+        List<Baulera> baulerasUsuario =  usuario.getBauleras();
+        if (baulerasUsuario != null && !baulerasUsuario.isEmpty()) {
+            bauleraService.setUsuarioNull(baulerasUsuario);
         }
-        usuarioRepositorio.deleteById(id);
+        usuarioRepositorio.deleteByIdPublico(id);
     }
 
     @SetAuditUser
-    public UsuarioResponse actualizar (UsuarioRequest u, Long id){
-        Usuario usuario = usuarioRepositorio.findById(id)
+    public UsuarioResponse actualizar (UsuarioRequest u, UUID id){
+        Usuario usuario = usuarioRepositorio.findByIdPublico(id)
                 .orElseThrow(()-> new ResourceNotFoundException("No se encontro el usuario a actualizar"));
 
         if(u.getEmail().trim() != "" && !usuarioRepositorio.existsByEmail(u.getEmail())){
@@ -167,12 +167,14 @@ public class UsuarioService {
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public UsuarioResponse darDeBaja(Long id){
+    public UsuarioResponse darDeBaja(UUID id){
 
-        Usuario usuario = usuarioRepositorio.findById(id)
+        Usuario usuario = usuarioRepositorio.findByIdPublico(id)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ id));
         List<Baulera> bauleras = usuario.getBauleras();
-        List<Baulera> baulerasCopia = bauleraService.setUsuarioNull(bauleras,usuario );
+
+        bauleraService.setUsuarioNull(bauleras);
+        usuario.setBauleras(new ArrayList<>());
 
         usuario.setEstado(ESTADO_USUARIO.inactivo);
         Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
@@ -182,8 +184,8 @@ public class UsuarioService {
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public UsuarioResponse darDeAlataUsuarioCreado (Long idUsuario){
-        Usuario u = usuarioRepositorio.findById(idUsuario)
+    public UsuarioResponse darDeAlataUsuarioCreado (UUID idUsuario){
+        Usuario u = usuarioRepositorio.findByIdPublico(idUsuario)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
         u.setEstado(ESTADO_USUARIO.activo);
 
@@ -193,14 +195,14 @@ public class UsuarioService {
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public UsuarioResponse asignarBauleras(Long usuarioId, List<Long> idBauleras){
+    public UsuarioResponse asignarBauleras(UUID usuarioId, List<UUID> idBauleras){
         //Metodo que depende de bauleraService
-        Usuario usuario = usuarioRepositorio.findById(usuarioId)
+        Usuario usuario = usuarioRepositorio.findByIdPublico(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ usuarioId));
 
         List<BauleraResponse> baulerasAsignadas = new ArrayList<>();
 
-        for(Long b: idBauleras){
+        for(UUID b: idBauleras){
             baulerasAsignadas.add(bauleraService.asignarBaulera(b,usuarioId));
         }
 
@@ -211,13 +213,13 @@ public class UsuarioService {
 
     @SetAuditUser
     @CacheEvict(value = "dashboard", allEntries = true)
-    public UsuarioResponse reducirDeuda(Long idUsuario, Integer montoAReducir){
+    public UsuarioResponse reducirDeuda(UUID idUsuario, Integer montoAReducir){
         if(montoAReducir == null || montoAReducir <= 0){
             log.error("Monto menor o igual a 0: {}", montoAReducir);
-            throw new IllegalArgumentException("El monto a reducir debe ser mayor a 0");
+            throw new IllegalInputValues("El monto a reducir debe ser mayor a 0");
         }
 
-        Usuario u = usuarioRepositorio.findById(idUsuario)
+        Usuario u = usuarioRepositorio.findByIdPublico(idUsuario)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
 
         BigDecimal deudaAcumulada = u.getDeudaAcumulada();
@@ -253,11 +255,11 @@ public class UsuarioService {
         }
     }
 
-    public Boolean eliminarUsuario(Long idUsuario){
-        if(usuarioRepositorio.existsById(idUsuario)){
-            Usuario usuario = usuarioRepositorio.findById(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
+    public Boolean eliminarUsuario(UUID idUsuario){
+        if(usuarioRepositorio.existsByIdPublico(idUsuario)){
+            Usuario usuario = usuarioRepositorio.findByIdPublico(idUsuario).orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
             remitoRepositorio.deleteByUsuario(usuario);
-            usuarioRepositorio.deleteById(idUsuario);
+            usuarioRepositorio.deleteById(usuario.getIdUsuario());
             return true;
         }else{
             return false;
