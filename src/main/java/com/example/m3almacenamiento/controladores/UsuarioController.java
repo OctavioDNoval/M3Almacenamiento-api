@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -72,23 +73,23 @@ public class UsuarioController {
     /*=========================PATCH=======================*/
 
     @PatchMapping("/admin/alta/usuarioCreado/{idUsuario}")
-    public ResponseEntity<UsuarioResponse> darDeAltaCreadoUsuario (@PathVariable Long idUsuario){
+    public ResponseEntity<UsuarioResponse> darDeAltaCreadoUsuario (@PathVariable UUID idUsuario){
         return ResponseEntity.ok(usuarioService.darDeAlataUsuarioCreado(idUsuario));
     }
 
     @PatchMapping("/admin/baja/usuario/{idUsuario}")
-    public ResponseEntity<UsuarioResponse> darDeBajaUsuario (@PathVariable Long idUsuario){
+    public ResponseEntity<UsuarioResponse> darDeBajaUsuario (@PathVariable UUID idUsuario){
         return ResponseEntity.ok(usuarioService.darDeBaja(idUsuario));
     }
 
     @PatchMapping("/admin/asignarBauleras/{idUsuario}")
-    public ResponseEntity<UsuarioResponse> asginarBauleras (@PathVariable Long idUsuario,
-                                                            @RequestBody List<Long> idBauleras){
+    public ResponseEntity<UsuarioResponse> asginarBauleras (@PathVariable UUID idUsuario,
+                                                            @RequestBody List<UUID> idBauleras){
         return ResponseEntity.ok(usuarioService.asignarBauleras(idUsuario, idBauleras));
     }
 
     @PatchMapping("/admin/reducirDeuda/{idUsuario}")
-    public ResponseEntity<UsuarioResponse> reducirDeuda (@PathVariable Long idUsuario, @RequestParam Integer montoAReducir){
+    public ResponseEntity<UsuarioResponse> reducirDeuda (@PathVariable UUID idUsuario, @RequestParam Integer montoAReducir){
         return ResponseEntity.ok(usuarioService.reducirDeuda(idUsuario,montoAReducir));
     }
 
@@ -99,14 +100,14 @@ public class UsuarioController {
     }
 
     @PatchMapping("/admin/actualizarUsuario")
-    public ResponseEntity<UsuarioResponse> actualizarUsuario (UsuarioRequest usuarioRequest, Long idUsuario){
+    public ResponseEntity<UsuarioResponse> actualizarUsuario (UsuarioRequest usuarioRequest, UUID idUsuario){
         return ResponseEntity.ok(usuarioService.actualizar(usuarioRequest, idUsuario));
     }
 
     /*=========================DELETE=======================*/
 
     @DeleteMapping("/admin/eliminar/{idUsuario}")
-    public ResponseEntity<Void> eliminarUsuario (@PathVariable Long idUsuario){
+    public ResponseEntity<Void> eliminarUsuario (@PathVariable UUID idUsuario){
         boolean deleted=usuarioService.eliminarUsuario(idUsuario);
         if(deleted){
             return ResponseEntity.noContent().build();

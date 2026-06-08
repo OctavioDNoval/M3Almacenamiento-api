@@ -62,13 +62,13 @@ public class DashBoardService {
     }
 
     @PreAuthorize("@preSecurityService.esMismoUsuario(#usuarioId)")
-    public UserDashBoardResponse obtenerUserDashBoard(Long usuarioId) {
+    public UserDashBoardResponse obtenerUserDashBoard(UUID usuarioId) {
         log.info("Obtendendo Dashboard para el usuario {}", usuarioId);
 
-        Usuario usuario = usuarioRepositorio.findById(usuarioId)
+        Usuario usuario = usuarioRepositorio.findByIdPublico(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        List<Baulera> baulerasUsuario = obtenerBauleras(usuarioId);
+        List<Baulera> baulerasUsuario = obtenerBauleras(usuario.getIdUsuario());
         EstadisticasBaulerasUsuario statsBauleras = calcularEstadisticasBaulerasUsuario(baulerasUsuario);
         List<BauleraResponse> baulerasResponse = convertirBauleraAResponse(baulerasUsuario);
 

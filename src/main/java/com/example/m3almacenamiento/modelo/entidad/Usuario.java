@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -38,6 +39,10 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Long idUsuario;
+
+    @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @Builder.Default
+    private UUID idPublico = UUID.randomUUID();
 
     @Column(nullable = false, unique = true, length = 20)
     @NotBlank

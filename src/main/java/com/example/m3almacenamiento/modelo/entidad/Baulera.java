@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Data
@@ -26,6 +27,10 @@ public class Baulera {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_baulera")
     private Long idBaulera;
+
+    @Column(name = "id_publico", unique = true, nullable = false, columnDefinition = "CHAR(36)", updatable = false)
+    @Builder.Default
+    private UUID idPublico = UUID.randomUUID();
 
     @Column(nullable = false, name = "NRO_baulera")
     private String nroBaulera;

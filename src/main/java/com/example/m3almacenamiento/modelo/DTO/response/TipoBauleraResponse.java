@@ -6,13 +6,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TipoBauleraResponse {
-    private Long idTipoBaulera;
+    private UUID idTipoBaulera;
     private String tipoBauleraNombre;
     private String descripcion;
     private Double precioMensual;

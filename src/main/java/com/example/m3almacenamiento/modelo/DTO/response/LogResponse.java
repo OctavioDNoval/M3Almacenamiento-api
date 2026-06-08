@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class LogResponse {
-    private Long idLog;
+    private UUID idLog;
     private String usuario;
     private String accion;
     private String tablaAfectada;
