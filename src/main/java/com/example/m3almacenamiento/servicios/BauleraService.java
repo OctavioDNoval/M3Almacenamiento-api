@@ -245,12 +245,11 @@ public class BauleraService {
         return true;
     }
 
-    protected List<Baulera> setUsuarioNull(List<Baulera> bauleras, Usuario usuario){
+    protected List<Baulera> setUsuarioNull(List<Baulera> bauleras){
         List<Baulera> copy =  new ArrayList<>(bauleras);
         for(Baulera baulera : copy){
             baulera.setUsuarioAsignado(null);
             baulera.setEstadoBaulera(ESTADO_BAULERA.disponible);
-            usuario.getBauleras().remove(baulera);
             bauleraRepositorio.save(baulera);
         }
         return copy;
