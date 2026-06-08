@@ -57,8 +57,9 @@ public class PdfGeneratorService {
             item.put("precio", precio);
             baulerasDetalle.add(item);
         }
+        BigDecimal precioXMes = (BigDecimal) baulerasDetalle.get(0).get("precio");
         context.setVariable("baulerasDetalle", baulerasDetalle);
-
+        context.setVariable("precioBauleraMes", precioXMes);
         // Deuda
         BigDecimal deudaAcumulada = usuario.getDeudaAcumulada();
         BigDecimal deudaAnterior = BigDecimal.ZERO;
@@ -89,9 +90,11 @@ public class PdfGeneratorService {
         }
 
         // 🔥 NUEVO: Importe en letras
-        String importeEnLetras = convertirNumeroALetras(remito.getImporteTotal());
+        String importeEnLetras = convertirNumeroALetras(precioXMes);
         context.setVariable("importeEnLetras", importeEnLetras);
 
+        BigDecimal deuda = remito.getDeudaAnterior();
+        context.setVariable("deudaAnterior", deuda);
 
         String fechaFormateada = remito.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         context.setVariable("fechaEmisionStr", fechaFormateada);

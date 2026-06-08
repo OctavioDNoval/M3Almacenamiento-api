@@ -47,5 +47,8 @@ public class Remito {
     @Column(name = "bauleras_string")
     private String baulerasString;
 
+    @Column(name = "deuda_anterior")
+    private BigDecimal deudaAnterior;
+
 
 }

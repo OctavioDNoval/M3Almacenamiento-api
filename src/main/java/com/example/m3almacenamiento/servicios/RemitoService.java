@@ -80,6 +80,7 @@ public class RemitoService {
         remito.setPeriodo(emailService.getNombreMesActual());
         remito.setFechaEmision(LocalDate.now());
         remito.setImporteTotal(infoDeudaEmail.getTotalCalculado());
+        remito.setDeudaAnterior(infoDeudaEmail.getDeudaAnterior());
 
         String bauleras = "";
         List<String> listaBauleras = infoDeudaEmail.getNumerosBauleras();

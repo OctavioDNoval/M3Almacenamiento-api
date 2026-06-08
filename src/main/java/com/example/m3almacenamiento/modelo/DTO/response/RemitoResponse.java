@@ -16,6 +16,7 @@ public class RemitoResponse {
     private String periodo;
     private LocalDate fechaEmision;
     private BigDecimal importeTotal;
+    private BigDecimal deudaAnterior;
     private String datosJson;
 
     private UsuarioResponse usuario;

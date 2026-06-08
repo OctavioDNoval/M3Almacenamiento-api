@@ -179,7 +179,7 @@
     <!-- Datos del recibo -->
     <div class="details-section">
         <p><strong>Recibí del Sr/a:</strong> <span th:text="${usuario.nombreCompleto}"></span></p>
-        <p><strong>La suma de pesos:</strong> $ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+        <p><strong>La suma de pesos:</strong> $ <span th:text="${#numbers.formatDecimal(precioBauleraMes, 1, 'COMMA', 2, 'POINT')}"></span>
             (<span th:text="${importeEnLetras}"></span>)</p>
         <p><strong>En concepto de:</strong> Cobro de alquiler correspondiente al período <strong><span th:text="${remito.periodo}"></span></strong></p>
         <p><strong>Por la baulera(s):</strong> <span th:text="${#strings.listJoin(numerosBauleras, ', ')}"></span> (MAR DEL PLATA)</p>
@@ -197,7 +197,7 @@
                     <tbody>
                     <tr>
                         <td>Importe alquiler</td>
-                        <td>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(precioBauleraMes, 1, 'COMMA', 2, 'POINT')}"></span></td>
                     </tr>
                     </tbody>
                 </table>
@@ -209,21 +209,18 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td>Total a pagar</td>
-                        <td>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></td>
+                        <td>Monto a pagar</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(precioBauleraMes, 1, 'COMMA', 2, 'POINT')}"></span></td>
                     </tr>
                     <tr>
-                        <td>Pagos Anteriores</td>
-                        <td>$ <span th:text="${#numbers.formatDecimal(pagosAnteriores, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                        <td>Deuda Anteriores</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(remito.deudaAnterior, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
                     </tr>
                     <tr class="total-highlight">
-                        <td><strong>Pagado</strong></td>
+                        <td><strong>Total a pagar</strong></td>
                         <td><strong>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></strong></td>
                     </tr>
-                    <tr>
-                        <td>Resta</td>
-                        <td>$ <span th:text="${#numbers.formatDecimal(resta, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
-                    </tr>
+
                     </tbody>
                 </table>
             </td>
