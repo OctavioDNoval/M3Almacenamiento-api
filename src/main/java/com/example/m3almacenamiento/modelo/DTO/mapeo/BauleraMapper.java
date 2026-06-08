@@ -33,15 +33,6 @@ public interface BauleraMapper {
     @Mapping(target = "idBaulera", source = "idPublico")
     BauleraResponse  toResponse(Baulera baulera);
 
-    //============Conversion para actualizar ================
-
-    @Mapping(target = "idBaulera", ignore = true)
-    @Mapping(target = "estadoBaulera", ignore = true)
-    @Mapping(target = "usuarioAsignado", ignore = true)
-    @Mapping(target = "fechaAsignacion", ignore = true)
-    @Mapping(target = "tipoBaulera", source = "idTipoBaulera", qualifiedByName = "idToTipoBaulera")
-    void updateFromRequest (BauleraRequest request, @MappingTarget Baulera baulera);
-
     //============Metodos auxiliares===============
 
     @Named("idToTipoBaulera")

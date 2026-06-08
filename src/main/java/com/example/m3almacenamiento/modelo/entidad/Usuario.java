@@ -86,5 +86,6 @@ public class Usuario {
     private Date ultimaActualizacionDeuda;
 
     @OneToMany(mappedBy = "usuarioAsignado", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Baulera> bauleras = new ArrayList<>();
 }

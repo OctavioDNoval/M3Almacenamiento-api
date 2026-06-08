@@ -15,6 +15,7 @@ public interface TipoBauleraMapper {
     @Mapping(target = "idTipoBaulera", ignore = true)
     TipoBaulera toEntity(TipoBauleraRequest tipoBauleraRequest);
 
+    @Mapping(target = "idTipoBaulera", source = "idPublico")
     TipoBauleraResponse toResponse(TipoBaulera tipoBaulera);
 
     @Mapping(target = "idTipoBaulera", ignore = true)
