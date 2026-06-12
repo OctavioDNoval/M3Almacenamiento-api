@@ -57,9 +57,12 @@ public class PdfGeneratorService {
             item.put("precio", precio);
             baulerasDetalle.add(item);
         }
-        BigDecimal precioXMes = (BigDecimal) baulerasDetalle.get(0).get("precio");
+        BigDecimal totalMensual = baulerasDetalle.stream()
+                .map(item -> (BigDecimal) item.get("precio"))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        context.setVariable("precioBauleraMes", totalMensual);
         context.setVariable("baulerasDetalle", baulerasDetalle);
-        context.setVariable("precioBauleraMes", precioXMes);
+        context.setVariable("precioBauleraMes", totalMensual);
         // Deuda
         BigDecimal deudaAcumulada = usuario.getDeudaAcumulada();
         BigDecimal deudaAnterior = BigDecimal.ZERO;
@@ -90,7 +93,7 @@ public class PdfGeneratorService {
         }
 
         // 🔥 NUEVO: Importe en letras
-        String importeEnLetras = convertirNumeroALetras(precioXMes);
+        String importeEnLetras = convertirNumeroALetras(totalMensual);
         context.setVariable("importeEnLetras", importeEnLetras);
 
         BigDecimal deuda = remito.getDeudaAnterior();
@@ -115,10 +118,10 @@ public class PdfGeneratorService {
         return letras;
     }
 
-    private String convertirEntero(long numero) {
+    private String convertirEntero(long numero) throws RuntimeException {
         if (numero == 0) return "CERO";
         if (numero == 1000000) return "UN MILLON";
-        if (numero > 999999) return "NO SOPORTADO";
+        if (numero > 999999) return "";
 
         String[] unidades = {"", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"};
         String[] decenas = {"", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"};
@@ -154,13 +157,16 @@ public class PdfGeneratorService {
         if (decenaUnidad > 0) {
             if (decenaUnidad < 10) {
                 resultado.append(unidades[decenaUnidad]);
-            } else if (decenaUnidad <= 19) {
+            } else if (decenaUnidad >= 11 && decenaUnidad <= 19) {  // ✅ FIX: excluye el 10
                 resultado.append(especiales[decenaUnidad - 11]);
             } else {
                 int dec = decenaUnidad / 10;
                 int uni = decenaUnidad % 10;
-                if (uni == 0) resultado.append(decenas[dec]);
-                else resultado.append(decenas[dec]).append(" Y ").append(unidades[uni]);
+                if (uni == 0) {
+                    resultado.append(decenas[dec]);
+                } else {
+                    resultado.append(decenas[dec]).append(" Y ").append(unidades[uni]);
+                }
             }
         }
 
