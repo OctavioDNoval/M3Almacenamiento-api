@@ -1,14 +1,17 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.InfoDeudaEmail;
 
 
 import com.example.m3almacenamiento.modelo.DTO.mapeo.RemitoMapper;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.RemitoResponse;
+import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Remito;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.RemitoRepositorio;
+import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,9 +20,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +33,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class RemitoService {
     private final RemitoRepositorio remitoRepositorio;
+    private final UsuarioRepositorio usuarioRepositorio;
     private final EmailService emailService;
     private final RemitoMapper remitoMapper;
 
@@ -73,6 +80,31 @@ public class RemitoService {
         return Sort.by(dir,campoReal);
     }
 
+    public Remito generarRemitoPorUsuario(UUID idUsuario){
+        Usuario u = usuarioRepositorio.findByIdPublico(idUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        Remito r= new Remito();
+        LocalDate fecha = LocalDate.now();
+        List<Baulera> bauleras = u.getBauleras();
+        BigDecimal total = BigDecimal.ZERO;
+        String stringBauleras="";
+
+        r.setUsuario(u);
+        r.setDeudaAnterior(BigDecimal.ZERO);
+        r.setFechaEmision(fecha);
+        for(int i = 0; i < bauleras.size(); i++){
+            stringBauleras = stringBauleras.concat(bauleras.get(i).getNroBaulera());
+            if(i != bauleras.size() - 1){
+                stringBauleras = stringBauleras.concat(",");
+            }
+            total = total.add(BigDecimal.valueOf(bauleras.get(i).getTipoBaulera().getPrecioMensual()));
+        }
+        r.setImporteTotal(total);
+        r.setBaulerasString(stringBauleras);
+        r.setPeriodo(fecha.getMonth().toString() + " " + String.valueOf(fecha.getYear()));
+        return r;
+    }
 
     public void generarRemito(Usuario usuario, InfoDeudaEmail infoDeudaEmail){
         Remito remito = new Remito();

@@ -44,6 +44,18 @@ public class RemitoController {
         return ResponseEntity.ok(paginaResponse);
     }
 
+    @GetMapping("/pdf/generar/{idUsuario}")
+    ResponseEntity<byte[]> generarYdescargarRemito(@PathVariable UUID idUsuario) throws Exception {
+        Remito remito = remitoService.generarRemitoPorUsuario(idUsuario);
+        byte[] pdf = pdfGeneratorService.generarRemitoPdfConTemplate(remito);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment","remito_"+remito.getUsuario().getNombreCompleto()+"_"+remito.getPeriodo()+".pdf");
+
+        return ResponseEntity.ok().headers(headers).body(pdf);
+    }
+
     @GetMapping("/pdf/{idRemito}")
     public ResponseEntity<byte[]> descargarPdfRemito(@PathVariable UUID idRemito) throws Exception {
         Remito remito = remitoRepositorio.findByIdPublico(idRemito).orElseThrow(()-> new ResourceNotFoundException("Remito No encontrado")); // tu servicio
