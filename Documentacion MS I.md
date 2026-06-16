@@ -201,7 +201,9 @@ El diagrama de casos de uso del sistema se presenta en la Figura 1 (elaborado po
 
 ## 5. DIAGRAMA DE CLASES CON LA ARQUITECTURA IMPLEMENTADA
 
-El sistema está desarrollado en Java con Spring Boot, siguiendo una arquitectura en capas: controladores (Controllers), servicios (Services), repositorios (Repositories), entidades (Entities), mappers (Mappers) y aspectos de auditoría. A continuación se muestra el diagrama de clases generado desde el IDE IntelliJ IDEA (formato Mermaid). Figura 2 (insertar imagen convertida a PNG a partir del código Mermaid adjunto en el anexo o incrustar aquí).
+El sistema está desarrollado en Java con Spring Boot, siguiendo una arquitectura en capas: controladores (Controllers), servicios (Services), repositorios (Repositories), entidades (Entities), mappers (Mappers) y aspectos de auditoría. A continuación se muestra el diagrama de clases generado desde el IDE IntelliJ IDEA 
+
+![UML](./m3almacenamientoUML.drawio.png)
 
 **Principales entidades:**
 
