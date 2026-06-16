@@ -1,6 +1,6 @@
 # DOCUMENTO DE ESPECIFICACIÓN DE REQUISITOS – API REST M3 ALMACENAMIENTO SYSTEM
 
-## 1. INTRODUCCIÓN {#introduccion}
+## 1. INTRODUCCIÓN 
 
 El presente documento describe la especificación de la API REST del sistema **M3 Almacenamiento System**, una aplicación diseñada para la gestión integral de un negocio de alquiler de baúleras. El sistema permite administrar usuarios, baúleras, tipos de baúlera, deudas mensuales, remitos y logs de auditoría, con automatizaciones vía cron y notificaciones por correo electrónico. El documento está dirigido principalmente a los administradores del sistema y al equipo de desarrollo, como guía para el uso y mantenimiento de la API.
 
@@ -161,6 +161,8 @@ Se presentan a continuación los requisitos funcionales más representativos del
 ## 4. DIAGRAMA DE CASO DE USO
 
 El diagrama de casos de uso del sistema se presenta en la Figura 1 (elaborado por el alumno). A continuación se especifica en detalle el caso de uso “Actualización automática de deuda mensual (cron)”, por ser el proceso central automatizado del sistema.
+
+![Diagrama de casos de uso](./M3Almacenamiento.drawio.png)
 
 ### 4.1 Especificación del Caso de Uso: Actualización automática de deuda mensual
 
