@@ -233,7 +233,9 @@ Descripción de las principales tablas y relaciones:
 
 - `logs` : Tabla de auditoría llenada por triggers después de cada operación de escritura sobre usuarios, baulera, tipobaulera. Guarda acción, valores anteriores/nuevos, usuario afectado, timestamp.
 
-Figura 3: Diagrama de entidades y relaciones (DER) – insertar imagen proporcionada por el alumno (image.png) que incluye tipobaulera, baulera, usuarios, logs; y agregar manualmente la tabla remito según el esquema adjunto en la respuesta.
+Figura 3: Diagrama de entidades y relaciones (DER) 
+
+![DER](./DER.PNG)
 
 **Relaciones clave:**
 
