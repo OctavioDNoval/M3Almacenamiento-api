@@ -1,5 +1,29 @@
 # DOCUMENTO DE ESPECIFICACIÓN DE REQUISITOS – API REST M3 ALMACENAMIENTO SYSTEM
 
+## Índice
+
+- [1. Introducción](#1-introduccion)
+  - [1.1 Propósito](#proposito)
+  - [1.2 Alcance](#12-alcance)
+  - [1.3 Definiciones, Acrónimos y Abreviaturas](#13-definiciones-acronimos-y-abreviaturas)
+  - [1.4 Referencias](#14-referencias)
+- [2. Descripción General del Sistema](#2-descripcion-general-del-sistema)
+  - [2.1 Perspectiva del Producto](#21-perspectiva-del-producto)
+  - [2.2 Funciones del Sistema](#22-funciones-del-sistema)
+  - [2.3 Objetivos](#23-objetivos)
+  - [2.4 Características de los Usuarios](#24-caracteristicas-de-los-usuarios)
+- [3. Definición de Requisitos del Sistema](#3-definicion-de-requisitos-del-sistema)
+  - [3.1 Requisitos Funcionales (RF)](#31-requisitos-funcionales-rf)
+  - [3.2 Requisitos No Funcionales (RNF)](#32-requisitos-no-funcionales-rnf)
+- [4. Diagrama de Caso de Uso](#4-diagrama-de-caso-de-uso)
+  - [4.1 Especificación del Caso de Uso: Actualización automática de deuda mensual](#41-especificacion-del-caso-de-uso-actualizacion-automatica-de-deuda-mensual)
+    - [Camino de éxito (flujo principal)](#camino-de-exito-flujo-principal)
+    - [Flujos alternativos y excepciones](#flujos-alternativos-y-excepciones)
+- [5. Diagrama de Clases con la Arquitectura Implementada](#5-diagrama-de-clases-con-la-arquitectura-implementada)
+- [6. Diagrama de Entidades y Relaciones](#6-diagrama-de-entidades-y-relaciones)
+
+---
+
 ## 1. INTRODUCCIÓN 
 
 El presente documento describe la especificación de la API REST del sistema **M3 Almacenamiento System**, una aplicación diseñada para la gestión integral de un negocio de alquiler de baúleras. El sistema permite administrar usuarios, baúleras, tipos de baúlera, deudas mensuales, remitos y logs de auditoría, con automatizaciones vía cron y notificaciones por correo electrónico. El documento está dirigido principalmente a los administradores del sistema y al equipo de desarrollo, como guía para el uso y mantenimiento de la API.
@@ -62,6 +86,8 @@ El sistema M3 Almacenamiento System es una API REST monolítica independiente. N
 
 - Documentación de generación de PDF con librerías Java (iText/OpenPDF).
 
+---
+
 ## 2. DESCRIPCIÓN GENERAL DEL SISTEMA
 
 ### 2.1 Perspectiva del Producto
@@ -121,6 +147,8 @@ El objetivo principal es la organización de los datos del negocio, brindando co
 
 - **USER:** Cliente que alquila baúleras. No requiere conocimientos técnicos; accede mediante una interfaz web/app sencilla para consultar su situación.
 
+---
+
 ## 3. DEFINICIÓN DE REQUISITOS DEL SISTEMA
 
 ### 3.1 Requisitos Funcionales (RF)
@@ -157,6 +185,8 @@ Se presentan a continuación los requisitos funcionales más representativos del
 | RNF-008 | La API deberá configurar CORS para permitir peticiones desde un frontend específico (dominio configurable).                                                                                                                                   |
 | RNF-009 | La base de datos será relacional (MySQL/MariaDB) con el esquema reflejado en el diagrama DER (Figura 2).                                                                                                                                      |
 | RNF-010 | Todos los endpoints devolverán errores en un formato estructurado: `{ "timestamp": "...", "codigo": 400, "error": "mensaje", "path": "/..." }`.                                                                                               |
+
+---
 
 ## 4. DIAGRAMA DE CASO DE USO
 
@@ -199,6 +229,8 @@ El diagrama de casos de uso del sistema se presenta en la Figura 1 (elaborado po
 | 5-EXC | Fallo al generar el remito (error de base de datos)                                                        | Se registra el error; la deuda ya fue actualizada, pero no queda registro de remito. El administrador deberá regenerarlo manualmente. |
 | ALT-1 | El administrador ejecuta manualmente el método (por endpoint no expuesto originalmente, solo para pruebas) | El sistema ejecuta el mismo proceso fuera de la fecha programada, respetando las mismas reglas de negocio.                            |
 
+---
+
 ## 5. DIAGRAMA DE CLASES CON LA ARQUITECTURA IMPLEMENTADA
 
 El sistema está desarrollado en Java con Spring Boot, siguiendo una arquitectura en capas: controladores (Controllers), servicios (Services), repositorios (Repositories), entidades (Entities), mappers (Mappers) y aspectos de auditoría. A continuación se muestra el diagrama de clases generado desde el IDE IntelliJ IDEA 
@@ -218,6 +250,8 @@ El sistema está desarrollado en Java con Spring Boot, siguiendo una arquitectur
 - Seguridad: `JwtService`, `JwtAuthFilter`, `CustomUserDetailsService`
 
 - Auditoría: `AuditAspect`, `LogService` (con triggers en BD como respaldo).
+
+---
 
 ## 6. DIAGRAMA DE ENTIDADES Y RELACIONES
 
