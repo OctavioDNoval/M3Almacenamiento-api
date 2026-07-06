@@ -45,8 +45,8 @@ public class RemitoController {
     }
 
     @GetMapping("/pdf/generar/{idUsuario}")
-    ResponseEntity<byte[]> generarYdescargarRemito(@PathVariable UUID idUsuario) throws Exception {
-        Remito remito = remitoService.generarRemitoPorUsuario(idUsuario);
+    ResponseEntity<byte[]> generarYdescargarRemito(@PathVariable UUID idUsuario, @RequestParam Integer mes) throws Exception {
+        Remito remito = remitoService.generarRemitoPorUsuario(idUsuario,mes);
         byte[] pdf = pdfGeneratorService.generarRemitoPdfConTemplate(remito);
 
         HttpHeaders headers = new HttpHeaders();

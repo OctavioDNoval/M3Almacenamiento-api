@@ -22,10 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,7 +79,10 @@ public class RemitoService {
         return Sort.by(dir,campoReal);
     }
 
-    public Remito generarRemitoPorUsuario(UUID idUsuario){
+    public Remito generarRemitoPorUsuario(UUID idUsuario, Integer mes){
+        if (mes == null || mes < 1 || mes > 12) {
+            throw new IllegalArgumentException("Mes debe ser un valor entre 1 y 12");
+        }
         Usuario u = usuarioRepositorio.findByIdPublico(idUsuario)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
@@ -102,7 +104,8 @@ public class RemitoService {
         }
         r.setImporteTotal(total);
         r.setBaulerasString(stringBauleras);
-        r.setPeriodo(fecha.getMonth().toString() + " " + String.valueOf(fecha.getYear()));
+        String nombreMes = Month.of(mes).getDisplayName(TextStyle.FULL, new Locale("es","ES"));
+        r.setPeriodo(nombreMes.toUpperCase() + " " + String.valueOf(fecha.getYear()));
         return r;
     }
 
