@@ -7,10 +7,13 @@ import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
 import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
+import com.example.m3almacenamiento.modelo.DTO.response.PagoResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
+import com.example.m3almacenamiento.modelo.entidad.Pago;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_USUARIO;
+import com.example.m3almacenamiento.repositorios.PagoRepositorio;
 import com.example.m3almacenamiento.repositorios.RemitoRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
@@ -41,6 +44,7 @@ public class UsuarioService {
     private final UsuarioMapper usuarioMapper;
     private final PasswordEncoder passwordEncoder;
     private final RemitoRepositorio remitoRepositorio;
+    private final PagoRepositorio pagoRepositorio;
     private final BauleraService bauleraService;
     private final EmailService emailService;
 
@@ -225,6 +229,7 @@ public class UsuarioService {
         BigDecimal deudaAcumulada = u.getDeudaAcumulada();
         BigDecimal monto = BigDecimal.valueOf(montoAReducir);
 
+
         if(deudaAcumulada.compareTo(monto) < 0){
             log.error("Monto ({}) es mayor a la deuda ({})",monto,deudaAcumulada);
             throw new RuntimeException("Monto a reducir mayor a la deuda");
@@ -234,6 +239,11 @@ public class UsuarioService {
         u.setDeudaAcumulada(nuevaDeuda);
 
         Usuario usuarioActualizado = usuarioRepositorio.save(u);
+
+        Pago p = new Pago();
+        p.setUsuario(usuarioActualizado);
+        p.setMontoPagado(monto);
+        pagoRepositorio.save(p);
 
         log.info("Deuda reducida para usuario {}: {} -> {}",
                 idUsuario, deudaAcumulada, nuevaDeuda);

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Listado de Pagos - M3 Almacenamiento</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 15px 20px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td, th {
+            vertical-align: top;
+            padding: 4px;
+        }
+        .header-table td {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .company-info {
+            text-align: left;
+        }
+        .company-info img {
+            max-width: 180px;
+            margin-bottom: 5px;
+        }
+        .doc-meta {
+            text-align: right;
+        }
+        .doc-type {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .data-table th {
+            background-color: #162d5a;
+            color: #fff;
+            padding: 8px 6px;
+            text-align: left;
+            font-size: 11px;
+        }
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            font-size: 11px;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .data-table .monto-col {
+            text-align: right;
+            white-space: nowrap;
+        }
+        .data-table .fecha-col {
+            white-space: nowrap;
+        }
+        .resumen-table {
+            margin-top: 15px;
+            width: auto;
+            margin-left: auto;
+        }
+        .resumen-table td {
+            padding: 5px 15px;
+            border: 1px solid #ccc;
+        }
+        .resumen-table .label {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        .resumen-table .value {
+            text-align: right;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 25px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+        }
+        .text-small {
+            font-size: 10px;
+            color: #666;
+        }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                border: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <table class="header-table">
+        <tr>
+            <td class="company-info">
+                <img th:if="${not #strings.isEmpty(logoBase64)}" th:src="${logoBase64}" alt="Logo M3" style="width: 180px; margin-bottom: 5px;"/>
+                <h1 th:if="${#strings.isEmpty(logoBase64)}" style="font-size: 18px; margin: 0;">M3 ALMACENAMIENTO</h1>
+                <p style="margin: 2px 0;"><strong>Bauleras y logística</strong></p>
+                <p style="margin: 2px 0;">República de Cuba 60, Mar del Plata</p>
+                <p style="margin: 2px 0;">Tel: 223-422 7000 | www.m3almacenamiento.com.ar</p>
+                <p style="margin: 2px 0;">Email: m3bauleras@gmail.com</p>
+            </td>
+            <td class="doc-meta">
+                <div class="doc-type">Listado de Pagos</div>
+                <p style="margin: 4px 0;"><strong>Fecha emisión:</strong> <span th:text="${fechaEmisionStr}"></span></p>
+                <p style="margin: 4px 0;"><strong>Total pagos:</strong> <span th:text="${totalPagos}"></span></p>
+                <p style="margin: 4px 0;"><strong>Monto total:</strong> $<span th:text="${#numbers.formatDecimal(montoTotal, 1, 'COMMA', 2, 'POINT')}"></span></p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th style="width: 40px;">N°</th>
+            <th style="width: 90px;">Fecha</th>
+            <th style="width: 110px;">Monto</th>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th style="width: 90px;">DNI</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pago, iter : ${pagos}">
+            <td th:text="${iter.count}"></td>
+            <td class="fecha-col" th:text="${#temporals.format(pago.fechaPago, 'dd/MM/yyyy')}"></td>
+            <td class="monto-col">$ <span th:text="${#numbers.formatDecimal(pago.montoPagado, 1, 'COMMA', 2, 'POINT')}"></span></td>
+            <td th:text="${pago.usuario.nombreCompleto}"></td>
+            <td th:text="${pago.usuario.email}"></td>
+            <td th:text="${pago.usuario.dni}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p style="margin: 2px 0;">M3 Almacenamiento - República de Cuba 60, Mar del Plata</p>
+        <p style="margin: 2px 0;">Tel: 223-422 7000 | Email: m3bauleras@gmail.com</p>
+        <p style="margin: 2px 0;" class="text-small">Documento generado automáticamente - Sin validez fiscal</p>
+    </div>
+</div>
+</body>
+</html>

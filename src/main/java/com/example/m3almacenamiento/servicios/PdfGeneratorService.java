@@ -1,7 +1,9 @@
 package com.example.m3almacenamiento.servicios;
 
 import com.example.m3almacenamiento.configuracion.ContactConfig;
+import com.example.m3almacenamiento.modelo.DTO.response.PagoResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
+
 import com.example.m3almacenamiento.modelo.entidad.Remito;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
@@ -15,6 +17,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -103,6 +106,37 @@ public class PdfGeneratorService {
         context.setVariable("fechaEmisionStr", fechaFormateada);
 
         String html = templateEngine.process("RemitoTemplate", context);
+        return convertirHtmlAPdf(html);
+    }
+
+    public byte[] generarPagosPdf(List<PagoResponse> pagos) throws Exception {
+        Context context = new Context();
+
+        String fechaEmisionStr = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        context.setVariable("fechaEmisionStr", fechaEmisionStr);
+
+        context.setVariable("pagos", pagos);
+        context.setVariable("totalPagos", pagos.size());
+
+        BigDecimal montoTotal = pagos.stream()
+                .map(PagoResponse::getMontoPagado)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        context.setVariable("montoTotal", montoTotal);
+
+        if (contactConfig != null && contactConfig.getContacto() != null) {
+            context.setVariable("contacto", contactConfig.getContacto());
+        }
+
+        try {
+            String logoBase64 = convertirImagenABase64();
+            context.setVariable("logoBase64", logoBase64);
+        } catch (Exception e) {
+            log.warn("No se pudo cargar el logo: {}", e.getMessage());
+            context.setVariable("logoBase64", "");
+        }
+
+        String html = templateEngine.process("PagosPlantillaTemplate", context);
         return convertirHtmlAPdf(html);
     }
 
