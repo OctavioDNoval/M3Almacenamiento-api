@@ -6,6 +6,7 @@ import com.example.m3almacenamiento.excepciones.IllegalInputValues;
 import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
 import com.example.m3almacenamiento.modelo.DTO.response.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +26,17 @@ public class ExceptionController {
                 .fechaError(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(error,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> resolveBadCredentials (BadCredentialsException ex, WebRequest request){
+        ApiErrorResponse error = ApiErrorResponse.builder()
+                .codigoError(HttpStatus.UNAUTHORIZED.value())
+                .estadoError(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .mensajeError(ex.getMessage())
+                .fechaError(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error,HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(BusinessException.class)

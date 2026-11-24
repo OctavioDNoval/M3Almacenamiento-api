@@ -60,21 +60,27 @@ public class PdfGeneratorService {
             item.put("precio", precio);
             baulerasDetalle.add(item);
         }
-        BigDecimal totalMensual = baulerasDetalle.stream()
-                .map(item -> (BigDecimal) item.get("precio"))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // Montos del propio remito (importeTotal = monto del período), no de los precios ni la deuda actuales:
+        // así un remito viejo o uno hecho a mano se reimprime igual que cuando se emitió
+        BigDecimal totalMensual = remito.getImporteTotal() != null
+                ? remito.getImporteTotal()
+                : baulerasDetalle.stream()
+                        .map(item -> (BigDecimal) item.get("precio"))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
         context.setVariable("precioBauleraMes", totalMensual);
         context.setVariable("baulerasDetalle", baulerasDetalle);
-        context.setVariable("precioBauleraMes", totalMensual);
         // Deuda
-        BigDecimal deudaAcumulada = usuario.getDeudaAcumulada();
-        BigDecimal deudaAnterior = BigDecimal.ZERO;
-        if (deudaAcumulada != null && remito.getImporteTotal() != null) {
-            deudaAnterior = deudaAcumulada.subtract(remito.getImporteTotal());
-            if (deudaAnterior.compareTo(BigDecimal.ZERO) < 0) deudaAnterior = BigDecimal.ZERO;
-        }
-        context.setVariable("deudaAcumulada", deudaAcumulada);
+        BigDecimal deudaAnterior = remito.getDeudaAnterior() != null ? remito.getDeudaAnterior() : BigDecimal.ZERO;
+        // deudaAnterior negativa = saldo a favor (pago adelantado): descuenta del mes y,
+        // si alcanza para todo, el total queda en 0 y se informa el saldo que sigue a favor
+        BigDecimal saldo = totalMensual.add(deudaAnterior);
+        BigDecimal totalAPagar = saldo.max(BigDecimal.ZERO);
+        BigDecimal saldoAFavor = deudaAnterior.signum() < 0 ? deudaAnterior.negate() : BigDecimal.ZERO;
+        BigDecimal saldoAFavorRestante = saldo.signum() < 0 ? saldo.negate() : BigDecimal.ZERO;
         context.setVariable("deudaAnterior", deudaAnterior);
+        context.setVariable("saldoAFavor", saldoAFavor);
+        context.setVariable("saldoAFavorRestante", saldoAFavorRestante);
+        context.setVariable("totalAPagar", totalAPagar);
 
         // Contacto
         if (contactConfig != null && contactConfig.getContacto() != null) {
@@ -98,9 +104,6 @@ public class PdfGeneratorService {
         // 🔥 NUEVO: Importe en letras
         String importeEnLetras = convertirNumeroALetras(totalMensual);
         context.setVariable("importeEnLetras", importeEnLetras);
-
-        BigDecimal deuda = remito.getDeudaAnterior();
-        context.setVariable("deudaAnterior", deuda);
 
         String fechaFormateada = remito.getFechaEmision().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         context.setVariable("fechaEmisionStr", fechaFormateada);

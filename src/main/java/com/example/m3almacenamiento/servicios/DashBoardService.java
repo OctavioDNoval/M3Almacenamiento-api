@@ -3,7 +3,6 @@ package com.example.m3almacenamiento.servicios;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.BauleraMapper;
 import com.example.m3almacenamiento.modelo.DTO.response.BauleraResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
-import com.example.m3almacenamiento.modelo.DTO.response.UserDashBoardResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ESTADO_BAULERA;
@@ -38,6 +37,8 @@ public class DashBoardService {
     private final BauleraRepositorio  bauleraRepositorio;
     private final BauleraMapper bauleraMapper;
 
+    static final int TOP_DEUDORES = 3;
+
     /*===============METODO PARA GENERAR EL DASHBOARD=====================*/
     @PreAuthorize("hasRole('ADMIN')")
     @Cacheable(value = "dashboard", key = "'dashboardData'", unless = "#result == null")
@@ -61,25 +62,6 @@ public class DashBoardService {
                 .build();
     }
 
-    @PreAuthorize("@preSecurityService.esMismoUsuario(#usuarioId)")
-    public UserDashBoardResponse obtenerUserDashBoard(UUID usuarioId) {
-        log.info("Obtendendo Dashboard para el usuario {}", usuarioId);
-
-        Usuario usuario = usuarioRepositorio.findByIdPublico(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        List<Baulera> baulerasUsuario = obtenerBauleras(usuario.getIdUsuario());
-        EstadisticasBaulerasUsuario statsBauleras = calcularEstadisticasBaulerasUsuario(baulerasUsuario);
-        List<BauleraResponse> baulerasResponse = convertirBauleraAResponse(baulerasUsuario);
-
-        return UserDashBoardResponse.builder()
-                .resumenUsuario(construirResumen(usuario))
-                .informacionBauleras(statsBauleras.informacion)
-                .bauleras(baulerasResponse)
-                .fechaCreacion(LocalDateTime.now())
-                .build();
-    }
-
     /*===============CLASES AUXILIARES=====================*/
 
     @RequiredArgsConstructor
@@ -98,14 +80,6 @@ public class DashBoardService {
         private final DashBoardResponse.EstadisticasUsuarios estadisticas;
         private final Long total;
         private final BigDecimal deudaTotal;
-    }
-
-    @Data
-    @RequiredArgsConstructor
-    private static class EstadisticasBaulerasUsuario{
-        private final UserDashBoardResponse.InformacionBauleras informacion;
-        private final Integer cantidadTotal;
-        private final BigDecimal valorMensualTotal;
     }
 
     /*=================METODOS DE CALCULO PRINCIPOALES=======================*/
@@ -151,6 +125,7 @@ public class DashBoardService {
                         .usuariosConDeuda(conDeuda)
                         .deudaTotal(deudaTotal)
                         .usuarioConMayorDeuda(usuarioConMayorDeuda)
+                        .topDeudores(calcularTopDeudores(usuarios, bauleras, TOP_DEUDORES))
                         .build();
 
         return new EstadisticasUsuariosCalculadas(estadisticas,total,deudaTotal);
@@ -174,69 +149,7 @@ public class DashBoardService {
                 .build();
     }
 
-    private EstadisticasBaulerasUsuario calcularEstadisticasBaulerasUsuario(List<Baulera> bauleras){
-        int cantidadTotal = bauleras.size();
-        BigDecimal valorMensualTotal = calcularValorMensualUsuario(bauleras);
-        Map<String, BigDecimal> valorPorTipo = agruparValorPorTipo(bauleras);
-        Map<String, Integer> cantidadPorTipo = agruparCantidadPorTipoUsuario(bauleras);
-
-        UserDashBoardResponse.InformacionBauleras informacion =
-                UserDashBoardResponse.InformacionBauleras.builder()
-                        .cantidadTotalBauleras(cantidadTotal)
-                        .valorMensualTotal(valorMensualTotal)
-                        .valorPorTipo(valorPorTipo)
-                        .cantidadPorTipo(cantidadPorTipo)
-                        .build();
-
-        return new EstadisticasBaulerasUsuario(informacion,cantidadTotal,valorMensualTotal);
-    }
-
     /*=================METODOS DE CALUCLO AUXILIARES===========================*/
-    private List<Baulera> obtenerBauleras(Long idUsuario){
-        return bauleraRepositorio.findByUsuarioAsignado_IdUsuario(idUsuario);
-    }
-
-    private BigDecimal calcularValorMensualUsuario(List<Baulera> bauleras){
-        return bauleras.stream()
-                .map(b-> BigDecimal.valueOf(b.getTipoBaulera().getPrecioMensual()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private Map<String, Integer> agruparCantidadPorTipoUsuario(List<Baulera> bauleras){
-        return bauleras.stream()
-                .collect(Collectors.groupingBy(
-                        b-> b.getTipoBaulera().getTipoBauleraNombre(),
-                        Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
-                ));
-    }
-
-    private List<BauleraResponse> convertirBauleraAResponse(List<Baulera> bauleras){
-        return bauleras.stream()
-                .map(bauleraMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    private UserDashBoardResponse.ResumenUsuario construirResumen(Usuario usuario){
-        String mensajeEstado = determinarMensajeEstado((usuario.getDeudaAcumulada()));
-
-        return UserDashBoardResponse.ResumenUsuario.builder()
-                .deudaAcumulada(usuario.getDeudaAcumulada())
-                .mensajeEstado(mensajeEstado)
-                .build();
-    }
-
-    private String determinarMensajeEstado(BigDecimal deuda) {
-        if (deuda == null || deuda.compareTo(BigDecimal.ZERO) == 0) {
-            return "✅ Sin deuda";
-        } else if (deuda.compareTo(new BigDecimal("50000")) < 0) {
-            return "⚠️ Deuda baja";
-        } else if (deuda.compareTo(new BigDecimal("150000")) < 0) {
-            return "⚠️ Deuda moderada";
-        } else {
-            return "🚨 Deuda alta - Contactar administración";
-        }
-    }
-
     private long contarBaulerasOcupadas(List<Baulera> bauleras){
         return bauleras.stream()
                 .filter(b -> b.getEstadoBaulera() == ESTADO_BAULERA.ocupada)
@@ -314,16 +227,22 @@ public class DashBoardService {
                 .count();
     }
 
-    private BigDecimal calcularDeudaTotal(List<Usuario> usuarios){
+    /**
+     * Suma solo lo que se debe: un saldo a favor (deuda negativa por pago adelantado) cuenta como 0,
+     * así no "cancela" la deuda de otro cliente ni deja el total en negativo.
+     */
+    BigDecimal calcularDeudaTotal(List<Usuario> usuarios){
         return usuarios.stream()
                 .map(Usuario::getDeudaAcumulada)
                 .filter(Objects::nonNull)
+                .map(d -> d.max(BigDecimal.ZERO))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private DashBoardResponse.UsuarioConMayorDeuda encontrarUsuarioConMayorDeuda(List<Usuario> usuarios, List<Baulera> bauleras){
         Optional<Usuario> usuarioConMayorDeuda = usuarios.stream()
-                .filter(u-> u.getDeudaAcumulada() !=null)
+                .filter(u-> u.getDeudaAcumulada() != null &&
+                        u.getDeudaAcumulada().compareTo(BigDecimal.ZERO) > 0)
                 .max(Comparator.comparing(Usuario::getDeudaAcumulada));
 
         if(!usuarioConMayorDeuda.isPresent()) return null;
@@ -337,6 +256,23 @@ public class DashBoardService {
                 .deuda(usuario.getDeudaAcumulada())
                 .cantidadBauleras(cantidadBauleras)
                 .build();
+    }
+
+    /** Clientes que deben (deuda > 0), de mayor a menor deuda, limitado a {@code limite}. */
+    List<DashBoardResponse.UsuarioConMayorDeuda> calcularTopDeudores(
+            List<Usuario> usuarios, List<Baulera> bauleras, int limite){
+        return usuarios.stream()
+                .filter(u -> u.getDeudaAcumulada() != null &&
+                        u.getDeudaAcumulada().compareTo(BigDecimal.ZERO) > 0)
+                .sorted(Comparator.comparing(Usuario::getDeudaAcumulada).reversed())
+                .limit(limite)
+                .map(u -> DashBoardResponse.UsuarioConMayorDeuda.builder()
+                        .nombre(u.getNombreCompleto())
+                        .email(u.getEmail())
+                        .deuda(u.getDeudaAcumulada())
+                        .cantidadBauleras(contarBaulerasDeUsuario(u, bauleras))
+                        .build())
+                .toList();
     }
 
     private long contarBaulerasDeUsuario(Usuario usuario, List<Baulera> bauleras){
@@ -379,45 +315,44 @@ public class DashBoardService {
                 .filter(b->b.getEstadoBaulera() == ESTADO_BAULERA.ocupada)
                 .collect(Collectors.toList());
 
-        Map<String,Long> ocupacionPorMes = new HashMap<>();
+        long totalBauleras = bauleras.size();
+        LocalDate hoy = LocalDate.now();
+        Map<String,Long> ocupacionPorMes = new LinkedHashMap<>();
         for (int i = 11; i>=0; i--){
-            LocalDate mes= LocalDate.now().minusMonths(i);
+            LocalDate mes= hoy.minusMonths(i);
             String clave= obtenerNombreMes(mes.getMonthValue()) + " " + mes.getYear();
             ocupacionPorMes.put(clave, 0L);
         }
 
+        LocalDate doceMesesAtras = hoy.minusMonths(12);
         for(Baulera b: baulerasOcupadas){
             Date fechaAsignacion = b.getFechaAsignacion();
+            if(fechaAsignacion == null) continue;
+
             LocalDate fecha = fechaAsignacion.toInstant()
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate();
 
             String clave = obtenerNombreMes(fecha.getMonthValue()) +" "+ fecha.getYear();
 
-            LocalDate doceMesesAtras = LocalDate.now().minusMonths(12);
-            if(!fecha.isBefore(doceMesesAtras)){
-                ocupacionPorMes.put(clave, ocupacionPorMes.getOrDefault(clave, 0L) + 1);
+            if(!fecha.isBefore(doceMesesAtras) && ocupacionPorMes.containsKey(clave)){
+                ocupacionPorMes.put(clave, ocupacionPorMes.get(clave) + 1);
             }
         }
 
         List<DashBoardResponse.DatoGrafico> datosGrafico = new ArrayList<>();
-        String[] colores = {
-                "#4A6FA5", "#166DD0", "#38A169", "#D69E2E", "#ED8936",
-                "#E53E3E", "#9F7AEA", "#ED64A6", "#4299E1", "#48BB78",
-                "#ECC94B", "#ED8936"
-        };
-
-        int i = 0;
         for(Map.Entry<String,Long> entry: ocupacionPorMes.entrySet()){
-            if(entry.getValue() > 0 || i>=6){
-                datosGrafico.add(DashBoardResponse.DatoGrafico.builder()
-                        .etiqueta(entry.getKey())
-                        .valor(BigDecimal.valueOf(entry.getValue()))
-                        .color(colores[i % colores.length])
-                        .build()
-                );
-                i++;
-            }
+            BigDecimal porcentaje = totalBauleras > 0
+                    ? new BigDecimal(entry.getValue())
+                            .divide(new BigDecimal(totalBauleras), 4, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100))
+                    : BigDecimal.ZERO;
+
+            datosGrafico.add(DashBoardResponse.DatoGrafico.builder()
+                    .etiqueta(entry.getKey())
+                    .valor(porcentaje)
+                    .build()
+            );
         }
         return datosGrafico;
     }

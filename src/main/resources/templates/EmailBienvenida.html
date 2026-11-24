@@ -88,102 +88,25 @@
 							</td>
 						</tr>
 
-						<!-- SALUDO Y MENSAJE DE ALTA POR ADMIN -->
+						<!-- SALUDO -->
 						<tr>
-							<td style="padding: 10px 20px; text-align: center">
+							<td style="padding: 10px 30px 30px; text-align: center">
 								<p style="margin: 0 0 15px 0; font-size: 16px">
 									Hola <strong th:text="${nombre}">Nombre</strong>
 								</p>
-								<p style="margin: 15px 0 5px 0; font-size: 16px; color: #555">
-									Ya podés acceder con las siguientes credenciales:
+								<p style="margin: 0 0 15px 0; font-size: 16px; color: #555">
+									Ya quedaste registrado como cliente de M3 Almacenamiento.
+									Gracias por elegirnos.
+								</p>
+								<p style="margin: 0; font-size: 15px; color: #555">
+									Todos los meses te vamos a enviar por este medio el detalle de
+									lo que tenés que abonar. Ante cualquier consulta, escribinos o
+									llamanos a los datos de abajo.
 								</p>
 							</td>
 						</tr>
 
-						<!-- CREDENCIALES DE ACCESO -->
-						<tr>
-							<td style="padding: 5px 20px 10px; text-align: center">
-								<table width="100%" cellpadding="0" cellspacing="0" border="0">
-									<tr>
-										<td align="center" style="padding: 3px 0">
-											<span
-												style="
-													font-size: 16px;
-													font-weight: bold;
-													color: #162d5a;
-												"
-												>Usuario:</span
-											>
-											<span
-												style="font-size: 16px; color: #333"
-												th:text="${email}"
-												>usuario@ejemplo.com</span
-											>
-										</td>
-									</tr>
-									<tr>
-										<td align="center" style="padding: 3px 0">
-											<span
-												style="
-													font-size: 16px;
-													font-weight: bold;
-													color: #162d5a;
-												"
-												>Contraseña temporal:</span
-											>
-											<span
-												style="font-size: 16px; color: #333"
-												th:text="${dni}"
-												>12345678</span
-											>
-										</td>
-									</tr>
-									<tr>
-										<td align="center" style="padding: 15px 0 5px 0">
-											<span
-												style="font-size: 14px; color: #666; font-style: italic"
-											>
-												Por seguridad, te recomendamos cambiar tu contraseña
-												después de iniciar sesión.
-											</span>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
-
-						<!-- BOTÓN DE ACCESO -->
-						<tr>
-							<td align="center" style="padding: 20px 20px 30px">
-								<table cellpadding="0" cellspacing="0" border="0">
-									<tr>
-										<td
-											align="center"
-											bgcolor="#28a745"
-											style="border-radius: 5px"
-										>
-											<a
-												href="https://m3almacenamientoclientes.tech"
-												style="
-													display: inline-block;
-													padding: 12px 30px;
-													font-size: 16px;
-													color: #ffffff;
-													text-decoration: none;
-													font-weight: bold;
-													border-radius: 5px;
-												"
-												target="_blank"
-											>
-												Ingresar a mi cuenta
-											</a>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
-
-						<!-- INFORMACIÓN DE CONTACTO (exactamente igual que el original) -->
+						<!-- INFORMACIÓN DE CONTACTO -->
 						<tr>
 							<td bgcolor="#162d5a" style="padding: 30px 20px; color: #ffffff">
 								<table width="100%" cellpadding="0" cellspacing="0" border="0">

@@ -77,6 +77,8 @@ public class DashBoardResponse {
         private Long usuariosConDeuda;
         private BigDecimal deudaTotal;
         private UsuarioConMayorDeuda usuarioConMayorDeuda;
+        // Clientes con deuda > 0, de mayor a menor (máx. DashBoardService.TOP_DEUDORES)
+        private List<UsuarioConMayorDeuda> topDeudores;
     }
 
     @Data

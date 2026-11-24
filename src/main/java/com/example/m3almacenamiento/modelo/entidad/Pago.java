@@ -32,6 +32,7 @@ public class Pago {
     private UUID idPublico = UUID.randomUUID();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
     @Min(value = 0)

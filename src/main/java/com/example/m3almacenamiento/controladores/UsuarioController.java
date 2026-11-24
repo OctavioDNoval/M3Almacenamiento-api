@@ -56,12 +56,6 @@ public class UsuarioController {
         return ResponseEntity.ok(paginaResponse);
     }
 
-    @GetMapping("/user/contrasenia-dni")
-    public ResponseEntity<Boolean> verificarContraseniaIgualADni (){
-        Usuario usuario = usuarioService.obtenerUsuarioAutenticado();
-        return ResponseEntity.ok(usuarioService.contraseniaEsDni(usuario));
-    }
-
 
     /*=======================POST========================*/
 
@@ -91,12 +85,6 @@ public class UsuarioController {
     @PatchMapping("/admin/reducirDeuda/{idUsuario}")
     public ResponseEntity<UsuarioResponse> reducirDeuda (@PathVariable UUID idUsuario, @RequestParam Integer montoAReducir){
         return ResponseEntity.ok(usuarioService.reducirDeuda(idUsuario,montoAReducir));
-    }
-
-    @PatchMapping("/user/cambiarContrasenia")
-    public ResponseEntity<Boolean> cambiarContrasenia (@RequestBody String newPassword){
-        Usuario usuario = usuarioService.obtenerUsuarioAutenticado();
-        return ResponseEntity.ok(usuarioService.cambiarContrasenia(usuario,newPassword));
     }
 
     @PatchMapping("/admin/actualizarUsuario")

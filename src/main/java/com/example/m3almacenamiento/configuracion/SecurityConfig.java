@@ -3,6 +3,7 @@ package com.example.m3almacenamiento.configuracion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -35,27 +36,21 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth-> auth
+                        // Clients (rol USER) are only records: the system is just for admins
+                        .requestMatchers("/auth/login", "/auth/validate", "/error").permitAll()
+                        // SEMIADMIN is read-only: it lists bauleras and tipos de baulera
+                        .requestMatchers("/baulera/semiadmin/**").hasAnyRole("SEMIADMIN", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/tipo-baulera/admin/obtener-todos")
+                                .hasAnyRole("SEMIADMIN", "ADMIN")
                         .requestMatchers(
-                                "/auth/**",
-                                "/baulera/public/**",
-                                "/tipo-baulera/public/**",
-                                "/users/public/**",
-                                "/logs/public/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/baulera/user/**",
-                                "/auth/user/**",
-                                "/users/user/**"
-                        ).hasAnyRole("USER", "ADMIN")
-                        .requestMatchers(
-                                "/bauleras/admin/**",
-                                "/tipo-bauleras/admin/**",
-                                "/users/admin/**"
+                                "/baulera/admin/**",
+                                "/tipo-baulera/admin/**",
+                                "/users/admin/**",
+                                "/logs/admin/**",
+                                "/pagos/**",
+                                "/remitos/**"
                         ).hasRole("ADMIN")
-                        .requestMatchers(
-                                "/baulera/semiadmin/**"
-                        ).hasAnyRole("SEMIADMIN", "ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().denyAll()
                 );
         return http.build();
     }

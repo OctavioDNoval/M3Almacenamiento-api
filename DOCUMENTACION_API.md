@@ -30,7 +30,7 @@ El backend utiliza JWT para autenticación stateless, Spring Security para autor
 
 ### 3.1 Endpoints públicos
 
-Los endpoints bajo `/auth/**` son públicos para login/registro/validación de token.
+Solo `POST /auth/login` y `GET /auth/validate` son públicos. No hay registro público: los clientes (rol `USER`) son registros que carga el administrador y **no pueden iniciar sesión**; el login solo acepta `ADMIN` y `SEMIADMIN` (cualquier otro caso responde 401 "Email o contraseña incorrectos").
 
 ### 3.2 Endpoints protegidos
 
@@ -38,7 +38,7 @@ La API opera con autenticación JWT. Cuando el token es válido, se carga el usu
 
 ### 3.3 Flujo recomendado de autenticación
 
-1. Consumir `POST /auth/login` (o `POST /auth/register`).
+1. Consumir `POST /auth/login`.
 2. Guardar `token` devuelto en `AuthResponse`.
 3. Enviar `Authorization: Bearer <token>` en las siguientes llamadas.
 4. Opcionalmente, validar/renovar token con `GET /auth/validate`.
@@ -139,13 +139,6 @@ Autentica un usuario por email y contraseña.
 - **Body:** `LoginRequest`
 - **Response:** `AuthResponse`
 
-### `POST /auth/register`
-
-Registra un usuario y devuelve token de sesión.
-
-- **Body:** `UsuarioRequest`
-- **Response:** `AuthResponse`
-
 ### `GET /auth/validate`
 
 Valida token vigente y retorna token renovado.
@@ -177,13 +170,6 @@ Obtiene usuarios paginados y opcionalmente filtrados.
   - `direction` (`asc`/`desc`, default `desc`)
   - `filter` (texto de búsqueda)
 - **Response:** `PaginacionResponse<UsuarioResponse>`
-
-### `GET /users/user/contrasenia-dni`
-
-Indica si la contraseña actual coincide con el DNI del usuario autenticado.
-
-- **Rol:** USER/ADMIN
-- **Response:** `Boolean`
 
 ### `POST /users/admin/alta/usuario`
 
@@ -227,14 +213,6 @@ Reduce deuda acumulada del usuario.
 - **Query param:** `montoAReducir` (entero > 0)
 - **Response:** `UsuarioResponse`
 
-### `PATCH /users/user/cambiarContrasenia`
-
-Actualiza contraseña del usuario autenticado.
-
-- **Rol:** USER/ADMIN
-- **Body:** string con nueva contraseña
-- **Response:** `Boolean`
-
 ---
 
 ## 5.3 Bauleras (`/baulera`)
@@ -251,22 +229,6 @@ Lista todas las bauleras.
 Lista bauleras en estado disponible.
 
 - **Rol:** ADMIN
-- **Response:** `List<BauleraResponse>`
-
-### `GET /baulera/user/obtener-x-id/{idBaulera}`
-
-Obtiene baulera por ID.
-
-- **Rol:** ADMIN (validación interna de servicio)
-- **Path param:** `idBaulera`
-- **Response:** `BauleraResponse`
-
-### `GET /baulera/user/obtenerTodo/{idUsuario}`
-
-Obtiene bauleras de un usuario.
-
-- **Rol:** ADMIN o mismo usuario
-- **Path param:** `idUsuario`
 - **Response:** `List<BauleraResponse>`
 
 ### `GET /baulera/admin/obtenerTodo/pagina`
@@ -341,13 +303,6 @@ Lista tipos de baulera.
 
 - **Response:** `List<TipoBauleraResponse>`
 
-### `GET /tipo-baulera/user/obtener-id/{idTipoBaulera}`
-
-Obtiene tipo de baulera por ID.
-
-- **Path param:** `idTipoBaulera`
-- **Response:** `TipoBauleraResponse`
-
 ### `POST /tipo-baulera/admin/new-tipo`
 
 Crea nuevo tipo de baulera.
@@ -389,13 +344,6 @@ Obtiene últimos logs de actualización.
 Obtiene últimos logs de eliminación.
 
 - **Response:** `List<LogResponse>`
-
-### `GET /logs/user/obtenerDashBoard/{idUsuario}`
-
-Dashboard individual del usuario.
-
-- **Path param:** `idUsuario`
-- **Response:** `UserDashBoardResponse`
 
 ### `GET /logs/admin/obtenerDashBoard`
 
@@ -481,6 +429,5 @@ Plantillas incluidas:
 ## 10. Notas de operación
 
 - Los endpoints con prefijo `/admin` están destinados al perfil administrativo.
-- Los endpoints con prefijo `/user` operan sobre contexto autenticado o validación de identidad de usuario.
 - La API integra auditoría de operaciones en entidades clave y consolidación en logs.
 

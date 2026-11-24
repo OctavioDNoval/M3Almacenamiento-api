@@ -3,7 +3,6 @@ package com.example.m3almacenamiento.controladores;
 import com.example.m3almacenamiento.modelo.DTO.response.DashBoardResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.LogResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
-import com.example.m3almacenamiento.modelo.DTO.response.UserDashBoardResponse;
 import com.example.m3almacenamiento.modelo.entidad.Log;
 import com.example.m3almacenamiento.servicios.DashBoardService;
 import com.example.m3almacenamiento.servicios.LogService;
@@ -42,11 +41,6 @@ public class DashBoardController {
     @GetMapping("/admin/obtenerLogs/delete")
     public ResponseEntity<List<LogResponse>> obtenerDelete(){
         return ResponseEntity.ok(logService.obtenerPorAccion("DELETE"));
-    }
-
-    @GetMapping("/user/obtenerDashBoard/{idUsuario}")
-    public ResponseEntity<UserDashBoardResponse> obtenerUserDashBoard(@PathVariable UUID idUsuario) {
-        return ResponseEntity.ok(dashBoardService.obtenerUserDashBoard(idUsuario));
     }
 
     @GetMapping("/admin/obtenerDashBoard")

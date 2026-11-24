@@ -1,6 +1,8 @@
 package com.example.m3almacenamiento.servicios;
 
+import com.example.m3almacenamiento.excepciones.IllegalInputValues;
 import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
+import com.example.m3almacenamiento.modelo.DTO.request.RemitoManualRequest;
 import com.example.m3almacenamiento.modelo.DTO.InfoDeudaEmail;
 
 
@@ -10,6 +12,7 @@ import com.example.m3almacenamiento.modelo.DTO.response.RemitoResponse;
 import com.example.m3almacenamiento.modelo.entidad.Baulera;
 import com.example.m3almacenamiento.modelo.entidad.Remito;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
+import com.example.m3almacenamiento.repositorios.BauleraRepositorio;
 import com.example.m3almacenamiento.repositorios.RemitoRepositorio;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import jakarta.transaction.Transactional;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +40,7 @@ public class RemitoService {
     private final UsuarioRepositorio usuarioRepositorio;
     private final EmailService emailService;
     private final RemitoMapper remitoMapper;
+    private final BauleraRepositorio bauleraRepositorio;
 
     public PaginacionResponse<RemitoResponse> obtenerTodosPaginados(Integer pagina, Integer tamanio, String sortBy, String direction){
         Sort sort =  buildSort(sortBy, direction);
@@ -128,5 +134,71 @@ public class RemitoService {
 
         remito.setBaulerasString(bauleras);
         remitoRepositorio.save(remito);
+    }
+
+    /*
+     * Remito armado a mano por el admin. No modifica la deuda del usuario:
+     * el remito es solo el comprobante. Se persiste únicamente si request.guardar es true.
+     */
+    public Remito crearRemitoManual(RemitoManualRequest request){
+        if (request == null || request.getIdUsuario() == null) {
+            throw new IllegalInputValues("Elegí el cliente del remito");
+        }
+        YearMonth periodo = parsearPeriodo(request.getPeriodo());
+
+        List<String> bauleras = request.getBauleras() == null ? List.of() : request.getBauleras().stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(nro -> !nro.isEmpty())
+                .distinct()
+                .toList();
+        if (bauleras.isEmpty()) {
+            throw new IllegalInputValues("El remito tiene que incluir al menos una baulera");
+        }
+        for (String nro : bauleras) {
+            if (bauleraRepositorio.findByNroBaulera(nro).isEmpty()) {
+                throw new IllegalInputValues("La baulera " + nro + " no existe");
+            }
+        }
+
+        BigDecimal deudaAnterior = request.getDeudaAnterior() == null ? BigDecimal.ZERO : request.getDeudaAnterior();
+        BigDecimal montoMes = request.getMontoMes();
+        if (montoMes == null) {
+            throw new IllegalInputValues("Ingresá el monto del mes");
+        }
+        // deudaAnterior puede ser negativa: es saldo a favor del cliente (pago adelantado)
+        if (montoMes.signum() < 0) {
+            throw new IllegalInputValues("El monto del mes no puede ser negativo");
+        }
+
+        Usuario usuario = usuarioRepositorio.findByIdPublico(request.getIdUsuario())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        Remito remito = new Remito();
+        remito.setUsuario(usuario);
+        remito.setPeriodo(nombrePeriodo(periodo));
+        remito.setFechaEmision(LocalDate.now());
+        remito.setImporteTotal(montoMes);
+        remito.setDeudaAnterior(deudaAnterior);
+        remito.setBaulerasString(String.join(",", bauleras));
+
+        return request.isGuardar() ? remitoRepositorio.save(remito) : remito;
+    }
+
+    private YearMonth parsearPeriodo(String periodo){
+        if (periodo == null || periodo.isBlank()) {
+            throw new IllegalInputValues("Elegí el mes del remito");
+        }
+        try {
+            return YearMonth.parse(periodo.trim());
+        } catch (DateTimeParseException e) {
+            throw new IllegalInputValues("El mes del remito no es válido");
+        }
+    }
+
+    // Mismo formato que los remitos del scheduler: "Noviembre 2026"
+    static String nombrePeriodo(YearMonth periodo){
+        String mes = periodo.getMonth().getDisplayName(TextStyle.FULL, new Locale("es", "ES"));
+        return mes.substring(0, 1).toUpperCase() + mes.substring(1) + " " + periodo.getYear();
     }
 }

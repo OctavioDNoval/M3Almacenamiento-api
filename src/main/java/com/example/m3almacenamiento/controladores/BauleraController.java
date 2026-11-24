@@ -33,18 +33,6 @@ public class BauleraController {
         return ResponseEntity.ok(bauleras);
     }
 
-    @GetMapping("/user/obtener-x-id/{idBaulera}")
-    public ResponseEntity<BauleraResponse> obtenerPorId(@PathVariable UUID idBaulera){
-        BauleraResponse bauleraPorId = bauleraService.obtenerPorId(idBaulera);
-        return ResponseEntity.ok(bauleraPorId);
-    }
-
-    @GetMapping("/user/obtenerTodo/{idUsuario}")
-    public ResponseEntity<List<BauleraResponse>> obtenerTodoPorUsuario(@PathVariable UUID idUsuario){
-        List<BauleraResponse> listaBauleras = bauleraService.obtenerPorIdUsuario(idUsuario);
-        return ResponseEntity.ok(listaBauleras);
-    }
-
     @GetMapping("/admin/obtenerTodo/pagina")
     public ResponseEntity<PaginacionResponse<BauleraResponse>> obtenerTodosPaginado(
             @RequestParam(defaultValue = "1") Integer pagina,

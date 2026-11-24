@@ -1,6 +1,7 @@
 package com.example.m3almacenamiento.controladores;
 
 import com.example.m3almacenamiento.excepciones.ResourceNotFoundException;
+import com.example.m3almacenamiento.modelo.DTO.request.RemitoManualRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.PaginacionResponse;
 import com.example.m3almacenamiento.modelo.DTO.response.RemitoResponse;
 
@@ -64,6 +65,20 @@ public class RemitoController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "remito_" + remito.getIdRemito() + ".pdf");
+
+        return ResponseEntity.ok().headers(headers).body(pdf);
+    }
+
+    // Remito armado a mano: devuelve el PDF y, si request.guardar, además lo persiste
+    @PostMapping("/manual")
+    public ResponseEntity<byte[]> crearRemitoManual(@RequestBody RemitoManualRequest request) throws Exception {
+        Remito remito = remitoService.crearRemitoManual(request);
+        byte[] pdf = pdfGeneratorService.generarRemitoPdfConTemplate(remito);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment",
+                "remito_" + remito.getUsuario().getNombreCompleto() + "_" + remito.getPeriodo() + ".pdf");
 
         return ResponseEntity.ok().headers(headers).body(pdf);
     }

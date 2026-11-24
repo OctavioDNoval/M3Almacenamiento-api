@@ -4,12 +4,12 @@ import com.example.m3almacenamiento.configuracion.JwtService;
 import com.example.m3almacenamiento.modelo.DTO.auth.AuthResponse;
 import com.example.m3almacenamiento.modelo.DTO.auth.LoginRequest;
 import com.example.m3almacenamiento.modelo.DTO.mapeo.UsuarioMapper;
-import com.example.m3almacenamiento.modelo.DTO.request.UsuarioRequest;
 import com.example.m3almacenamiento.modelo.DTO.response.UsuarioResponse;
 import com.example.m3almacenamiento.modelo.entidad.Usuario;
 import com.example.m3almacenamiento.modelo.enumerados.ROL;
 import com.example.m3almacenamiento.repositorios.UsuarioRepositorio;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,17 @@ public class AuthService {
 
 
     public AuthResponse login(LoginRequest loginRequest) {
+        // Same error in every case so the login does not reveal which emails exist
         Usuario usuario = usuarioRepositorio.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(AuthService::credencialesInvalidas);
+
+        // Clients are only records: just admins and semiadmins can sign in
+        if(usuario.getRol() == ROL.USER){
+            throw credencialesInvalidas();
+        }
 
         if(!passwordEncoder.matches(loginRequest.getPassword(), usuario.getPasswordHash())){
-            throw new RuntimeException("Constrasenia incorrecta");
+            throw credencialesInvalidas();
         }
 
         String token = jwtService.generateToken(
@@ -42,20 +48,7 @@ public class AuthService {
         return new AuthResponse(token, usuarioResponse);
     }
 
-    public AuthResponse register(UsuarioRequest usuarioRequest) {
-        if(usuarioRepositorio.existsByEmail(usuarioRequest.getEmail())){
-            throw new RuntimeException("Usuario existente");
-        }
-        Usuario usuario = usuarioMapper.toEntity(usuarioRequest);
-        usuario.setPasswordHash(passwordEncoder.encode(usuarioRequest.getPassword()));
-        Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
-        String token = jwtService.generateToken(
-                User.withUsername(usuarioGuardado.getEmail())
-                        .password(usuarioGuardado.getPasswordHash())
-                        .roles(ROL.USER.name())
-                        .build()
-        );
-        UsuarioResponse usuarioResponse = usuarioMapper.toResponse(usuario);
-        return new AuthResponse(token, usuarioResponse);
+    private static BadCredentialsException credencialesInvalidas() {
+        return new BadCredentialsException("Email o contraseña incorrectos");
     }
 }

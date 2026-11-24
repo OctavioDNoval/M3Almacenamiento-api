@@ -168,7 +168,7 @@
             </td>
             <td class="receipt-meta">
                 <div class="doc-type">Remito</div>
-                <p><strong>Nº:</strong> <span th:text="${remito.idRemito}"></span></p>
+                <p><strong>Nº:</strong> <span th:text="${remito.idRemito != null ? remito.idRemito : '-'}"></span></p>
                 <p><strong>Fecha:</strong> <span th:text="${fechaEmisionStr}"></span></p>
                 <p><strong>Período:</strong> <span th:text="${remito.periodo}"></span></p>
                 <p class="text-small">Original</p>
@@ -212,13 +212,21 @@
                         <td>Monto a pagar</td>
                         <td>$ <span th:text="${#numbers.formatDecimal(precioBauleraMes, 1, 'COMMA', 2, 'POINT')}"></span></td>
                     </tr>
-                    <tr>
+                    <tr th:if="${saldoAFavor == 0}">
                         <td>Deuda Anteriores</td>
-                        <td>$ <span th:text="${#numbers.formatDecimal(remito.deudaAnterior, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(deudaAnterior, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
+                    </tr>
+                    <tr th:if="${saldoAFavor > 0}">
+                        <td>Saldo a favor</td>
+                        <td>- $ <span th:text="${#numbers.formatDecimal(saldoAFavor, 1, 'COMMA', 2, 'POINT')}">0.00</span></td>
                     </tr>
                     <tr class="total-highlight">
                         <td><strong>Total a pagar</strong></td>
-                        <td><strong>$ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span></strong></td>
+                        <td><strong>$ <span th:text="${#numbers.formatDecimal(totalAPagar, 1, 'COMMA', 2, 'POINT')}"></span></strong></td>
+                    </tr>
+                    <tr th:if="${saldoAFavorRestante > 0}">
+                        <td>Sigue a favor</td>
+                        <td>$ <span th:text="${#numbers.formatDecimal(saldoAFavorRestante, 1, 'COMMA', 2, 'POINT')}"></span></td>
                     </tr>
 
                     </tbody>
@@ -229,7 +237,7 @@
 
     <!-- Total Inquilino -->
     <div class="total-inquilino">
-        Total Inquilino: $ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span>
+        Total Inquilino: $ <span th:text="${#numbers.formatDecimal(totalAPagar, 1, 'COMMA', 2, 'POINT')}"></span>
     </div>
 
     <!-- Tabla de bauleras asignadas -->
@@ -251,11 +259,11 @@
     </div>
 
     <!-- Deuda acumulada (si existe) -->
-    <div th:if="${deudaAcumulada != null and deudaAcumulada > 0}" class="deuda-box">
+    <div th:if="${deudaAnterior > 0}" class="deuda-box">
         <p style="margin: 0;"><strong>Resumen de Deuda</strong><br/>
             Deuda anterior: $ <span th:text="${#numbers.formatDecimal(deudaAnterior, 1, 'COMMA', 2, 'POINT')}"></span><br/>
-            Monto actual: $ <span th:text="${#numbers.formatDecimal(remito.importeTotal, 1, 'COMMA', 2, 'POINT')}"></span><br/>
-            <strong>Deuda total: $ <span th:text="${#numbers.formatDecimal(deudaAcumulada, 1, 'COMMA', 2, 'POINT')}"></span></strong>
+            Monto actual: $ <span th:text="${#numbers.formatDecimal(precioBauleraMes, 1, 'COMMA', 2, 'POINT')}"></span><br/>
+            <strong>Deuda total: $ <span th:text="${#numbers.formatDecimal(totalAPagar, 1, 'COMMA', 2, 'POINT')}"></span></strong>
         </p>
     </div>
 

@@ -53,7 +53,10 @@ public class EmailService {
 
             String mesActual = getNombreMesActual();
             variables.put("mes", mesActual);
-            variables.put("deudaTotal", infoEmail.getNuevaDeudaTotaL());
+            // Deuda negativa = saldo a favor (pago adelantado): se muestra en positivo con otra etiqueta
+            BigDecimal nuevaDeuda = infoEmail.getNuevaDeudaTotaL() != null ? infoEmail.getNuevaDeudaTotaL() : BigDecimal.ZERO;
+            variables.put("deudaTotal", nuevaDeuda.abs());
+            variables.put("totalAFavor", nuevaDeuda.signum() < 0);
 
             BigDecimal totalCalculado = BigDecimal.ZERO;
             List<String> bauleras = new ArrayList<>();
@@ -79,7 +82,9 @@ public class EmailService {
             variables.put("nroBauleras", infoEmail.getNumerosBauleras());
             variables.put("totalCalculado", infoEmail.getTotalCalculado());
             variables.put("montoMensual", infoEmail.getMontoMensual());
-            variables.put("deudaAnterior", infoEmail.getDeudaAnterior());
+            BigDecimal deudaAnterior = infoEmail.getDeudaAnterior() != null ? infoEmail.getDeudaAnterior() : BigDecimal.ZERO;
+            variables.put("deudaAnterior", deudaAnterior.abs());
+            variables.put("anteriorAFavor", deudaAnterior.signum() < 0);
             try {
                 String logoBase64 = convertirImagenABase64();
                 variables.put("logoBase64", logoBase64);
@@ -163,9 +168,8 @@ public class EmailService {
     public void enviarBienvenida(Usuario usuario){
         try{
         Map<String,Object> variables = new HashMap<>();
+        // Clients have no access to the system: the welcome email carries no credentials
         variables.put("nombre", usuario.getNombreCompleto());
-        variables.put("email", usuario.getEmail());
-        variables.put("dni", usuario.getDni());
 
         if (contactConfig != null && contactConfig.getContacto() != null) {
             variables.put("telefonoContacto", contactConfig.getContacto().getTelefono());

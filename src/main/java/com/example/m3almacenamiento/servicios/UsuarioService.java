@@ -60,7 +60,8 @@ public class UsuarioService {
         }
 
         Usuario usuario = usuarioMapper.toEntity(request);
-        usuario.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        // Clients do not sign in: random password nobody knows (the column is NOT NULL)
+        usuario.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
         usuario.setEstado(ESTADO_USUARIO.activo);
         usuario.setFechaCreacion(new Date());
 
@@ -125,13 +126,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepositorio.findByIdPublico(id)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ id));
         return  usuarioMapper.toResponse(usuario);
-    }
-
-    public Usuario obtenerUsuarioAutenticado(){
-        Authentication auth =  SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        return usuarioRepositorio.findByEmail(email)
-                .orElseThrow(()-> new RuntimeException("Usuario no encontrado"));
     }
 
 
@@ -226,15 +220,11 @@ public class UsuarioService {
         Usuario u = usuarioRepositorio.findByIdPublico(idUsuario)
                 .orElseThrow(()-> new RuntimeException("Usuario no encontrado con ID: "+ idUsuario));
 
-        BigDecimal deudaAcumulada = u.getDeudaAcumulada();
+        BigDecimal deudaAcumulada = u.getDeudaAcumulada() != null ? u.getDeudaAcumulada() : BigDecimal.ZERO;
         BigDecimal monto = BigDecimal.valueOf(montoAReducir);
 
-
-        if(deudaAcumulada.compareTo(monto) < 0){
-            log.error("Monto ({}) es mayor a la deuda ({})",monto,deudaAcumulada);
-            throw new RuntimeException("Monto a reducir mayor a la deuda");
-        }
-
+        // Se permite pagar de más (pago adelantado): la deuda queda negativa = saldo a favor,
+        // que el cobro mensual del scheduler va consumiendo.
         BigDecimal nuevaDeuda = deudaAcumulada.subtract(monto);
         u.setDeudaAcumulada(nuevaDeuda);
 
@@ -249,20 +239,6 @@ public class UsuarioService {
                 idUsuario, deudaAcumulada, nuevaDeuda);
 
         return usuarioMapper.toResponse(usuarioActualizado);
-    }
-
-    public Boolean contraseniaEsDni(Usuario usuario){
-        return passwordEncoder.matches(usuario.getDni(), usuario.getPasswordHash());
-    }
-
-    public Boolean cambiarContrasenia(Usuario usuario,String newPassword){
-        try{
-            usuario.setPasswordHash(passwordEncoder.encode(newPassword));
-            Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
-            return true;
-        }catch(Exception e){
-            return false;
-        }
     }
 
     public Boolean eliminarUsuario(UUID idUsuario){

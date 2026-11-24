@@ -12,6 +12,7 @@ import com.example.m3almacenamiento.servicios.RemitoService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,8 @@ public class PagosScheduler {
      * */
     @Scheduled(cron = "0 0 6 1 * *")
     @Transactional
+    // Cambia la deuda de todos: sin esto el Dashboard cacheado queda viejo hasta las 02:00 del día siguiente
+    @CacheEvict(value = "dashboard", allEntries = true)
     public void actualizarDeudas(){
         log.info("==== Inciando actualizacion de deudas mensual ====");
 

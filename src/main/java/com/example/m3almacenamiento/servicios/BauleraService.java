@@ -217,15 +217,6 @@ public class BauleraService {
         return Sort.by(dir,campoReal);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @preSecurityService.esMismoUsuario(#idUsuario)")
-    public List<BauleraResponse> obtenerPorIdUsuario(UUID idUsuario){
-        List<Baulera> listaBauleras = bauleraRepositorio.findByUsuarioAsignado_IdPublico((idUsuario));
-        return listaBauleras
-                .stream()
-                .map(bauleraMapper::toResponse)
-                .collect(Collectors.toList());
-    }
-
     @SetAuditUser
     @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "dashboard", allEntries = true)

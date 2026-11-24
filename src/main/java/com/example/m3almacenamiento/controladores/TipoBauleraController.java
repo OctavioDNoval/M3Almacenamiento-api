@@ -24,11 +24,6 @@ public class TipoBauleraController {
         return ResponseEntity.ok(lista);
     }
 
-    @GetMapping("/user/obtener-id/{idTipoBaulera}")
-    public ResponseEntity<TipoBauleraResponse> obtenerPorId(@PathVariable UUID idTipoBaulera){
-        return ResponseEntity.ok(tipoBauleraService.obtenerPorId(idTipoBaulera));
-    }
-
     //=================POST=================
     @PostMapping("/admin/new-tipo")
     public ResponseEntity<TipoBauleraResponse> newTipo(@RequestBody TipoBauleraRequest tipoBauleraRequest){

@@ -1,7 +1,6 @@
 package com.example.m3almacenamiento.modelo.DTO.request;
 
 import com.example.m3almacenamiento.modelo.enumerados.ROL;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -26,9 +25,6 @@ public class UsuarioRequest {
 
     @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Teléfono inválido")
     private String telefono;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String password;
 
     @Builder.Default
     private ROL rol = ROL.USER;

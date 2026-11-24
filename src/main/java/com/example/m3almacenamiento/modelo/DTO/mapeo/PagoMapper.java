@@ -7,6 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {UsuarioMapper.class})
 public interface PagoMapper {
-    @Mapping(target = "idPago", ignore = true)
+
     PagoResponse toResponse(Pago pago);
 }
